@@ -19,6 +19,7 @@ func HandleLoginView(c *fiber.Ctx) error {
 	if visitedLoginPage == nil {
 		session.Set("visited_login_page", true)
 		session.Save()
+	} else {
 		title = "Login again"
 	}
 

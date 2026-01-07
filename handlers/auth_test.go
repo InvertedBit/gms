@@ -29,15 +29,18 @@ func TestHandleLoginView_SessionCookieSet(t *testing.T) {
 	for _, cookie := range cookies {
 		if cookie.Name == "session_id" {
 			sessionCookie = true
+			if cookie.Value == "" {
+				t.Error("Session cookie value is empty")
+			}
 			break
 		}
 	}
 
 	if !sessionCookie {
-		t.Error("Expected session cookie to be set, but it was not")
+		t.Error("Expected session cookie to be set on first visit, but it was not")
 	}
 
-	// Second request with the session cookie - should not set title to "Login again"
+	// Second request with the session cookie - should recognize returning visitor
 	req2 := httptest.NewRequest("GET", "/auth/login", nil)
 	for _, cookie := range cookies {
 		req2.AddCookie(cookie)
