@@ -31,3 +31,7 @@ func HandleLoginView(c *fiber.Ctx) error {
 
 	return ReturnHandler(c, loginPage)
 }
+
+func HandleLogin(c *fiber.Ctx) error {
+	return nil
+}
