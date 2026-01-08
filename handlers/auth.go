@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/invertedbit/gms/auth"
 	"github.com/invertedbit/gms/html"
 	htmlviews "github.com/invertedbit/gms/html/views"
+	hx "github.com/stackus/hxgo"
+	"github.com/stackus/hxgo/hxfiber"
 )
 
 func HandleLoginView(c *fiber.Ctx) error {
@@ -33,5 +37,16 @@ func HandleLoginView(c *fiber.Ctx) error {
 }
 
 func HandleLogin(c *fiber.Ctx) error {
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+
+	if username == "" || password == "" {
+		eventData := make(map[string]interface{})
+		eventData["message"] = "Invalid credentials"
+		hxfiber.Response(c, hx.Status(http.StatusBadRequest), hx.Trigger(hx.Event("gms:login-failed", eventData)))
+	}
+
+	// Perform login logic here (e.g., check credentials, create session, etc.)
+
 	return nil
 }
