@@ -16,9 +16,10 @@ func HandleLoginView(c *fiber.Ctx) error {
 	}
 	visitedLoginPage := session.Get("visited_login_page")
 
-	if visitedLoginPage != nil || visitedLoginPage == false {
+	if visitedLoginPage == nil {
 		session.Set("visited_login_page", true)
 		session.Save()
+	} else {
 		title = "Login again"
 	}
 
@@ -29,4 +30,8 @@ func HandleLoginView(c *fiber.Ctx) error {
 	}
 
 	return ReturnHandler(c, loginPage)
+}
+
+func HandleLogin(c *fiber.Ctx) error {
+	return nil
 }

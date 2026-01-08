@@ -1,0 +1,9 @@
+{
+	"tailwindCSS.includeLanguages": {
+		"go": "html",
+	},
+	"tailwindCSS.experimental.classRegex": [
+		["Class(?:es)?[({]([^)}]*)[)}]", "[\"`]([^\"`]*)[\"`]"],
+		["GetClassBuilder?[({]([^)}]*)[)}]", "[\"`]([^\"`]*)[\"`]"]
+	],
+}

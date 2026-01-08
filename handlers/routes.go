@@ -74,6 +74,7 @@ func New() *fiber.App {
 	app.Get("/", HandleViewHome)
 
 	app.Get("/auth/login", HandleLoginView)
+	app.Post("/auth/login", HandleLogin)
 
 	RegisterBackendRoutes(app.Group("/backend"))
 
