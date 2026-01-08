@@ -10,6 +10,7 @@ require (
 	golang.org/x/crypto v0.31.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
+	honnef.co/go/js/dom/v2 v2.0.0-20250304181735-b5e52f05e89d
 	maragu.dev/gomponents v1.2.0
 	maragu.dev/gomponents-htmx v0.6.1
 )
