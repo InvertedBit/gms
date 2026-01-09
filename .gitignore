@@ -3,3 +3,4 @@ tmp/*
 node_modules/*
 assets/css/theme.css
 assets/js/main.wasm
+gms-data.sqlite3

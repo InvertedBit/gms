@@ -6,8 +6,6 @@ import (
 
 func main() {
 
-	// body.SetInnerHTML("<h1>Hello from WebAssembly!</h1>")
-
 	events.RegisterEventListeners()
 
 	select {}
