@@ -11,10 +11,20 @@ import (
 )
 
 func HandleBackendDashboard(c *fiber.Ctx) error {
-	dashboardPage := html.Page{
-		Title:           "Admin Dashboard",
-		PageContent:     adminviews.DashboardPage(),
-		LayoutViewModel: GetLayoutModel(c, "Admin Dashboard"),
+	adminLayoutModel := GetAdminLayoutModel(c, "Admin Dashboard")
+	
+	// Add breadcrumbs
+	adminLayoutModel.AddBreadcrumb("Home", "/")
+	adminLayoutModel.AddBreadcrumb("Admin", "/admin")
+	adminLayoutModel.AddBreadcrumb("Dashboard", "")
+	
+	// Add example action button
+	adminLayoutModel.AddActionButton("New Item", "/admin/items/new", "ri-add-line", true)
+	
+	dashboardPage := html.AdminPage{
+		Title:                "Admin Dashboard - GMS",
+		PageContent:          adminviews.DashboardPage(),
+		AdminLayoutViewModel: adminLayoutModel,
 	}
 
 	return ReturnHandler(c, dashboardPage)
