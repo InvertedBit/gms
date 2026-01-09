@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/storage/sqlite3/v2"
 	"github.com/invertedbit/gms/auth"
 	"github.com/invertedbit/gms/html"
 	htmlviews "github.com/invertedbit/gms/html/views"
@@ -21,8 +23,8 @@ func GetNavbarModel(c *fiber.Ctx) *viewmodels.NavbarViewModel {
 	})
 
 	myRecipes := viewmodels.NavbarMenuItem{
-		Label: "My Recipes",
-		Link:  "/recipes",
+		Label: "Admin",
+		Link:  "/admin",
 	}
 
 	categories := viewmodels.NavbarMenuItem{
@@ -50,6 +52,7 @@ func GetLayoutModel(c *fiber.Ctx, title string) *viewmodels.LayoutViewModel {
 	if err != nil {
 		panic(err)
 	}
+
 	userId := session.Get("user_uuid")
 	if userId != nil && userId != "" {
 		currentUser, err := auth.GetUserFromUUID(fmt.Sprintf("%v", userId))
@@ -65,7 +68,19 @@ func GetLayoutModel(c *fiber.Ctx, title string) *viewmodels.LayoutViewModel {
 func New() *fiber.App {
 	app := fiber.New()
 
-	auth.SessionStore = session.New()
+	store := sqlite3.New(sqlite3.Config{
+		Database:        "./gms-data.sqlite3",
+		Table:           "sessions",
+		Reset:           false,
+		GCInterval:      10 * time.Second,
+		MaxOpenConns:    100,
+		MaxIdleConns:    100,
+		ConnMaxLifetime: 1 * time.Second,
+	})
+
+	auth.SessionStore = *session.New(session.Config{
+		Storage: store,
+	})
 
 	// app.Use(auth.SessionStore)
 
@@ -75,8 +90,9 @@ func New() *fiber.App {
 
 	app.Get("/auth/login", HandleLoginView)
 	app.Post("/auth/login", HandleLogin)
+	app.Get("/auth/logout", HandleLogout)
 
-	RegisterBackendRoutes(app.Group("/backend"))
+	RegisterBackendRoutes(app.Group("/admin"))
 
 	app.Get("*", HandleNotFound)
 

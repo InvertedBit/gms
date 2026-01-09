@@ -4,7 +4,8 @@ import "github.com/gofiber/fiber/v2"
 
 func RegisterBackendRoutes(router fiber.Router) error {
 
-	router.Get("/", HandleBackendDashboard)
+	router.Get("/", HandleBackendDashboardRedirect)
+	router.Get("/dashboard", HandleBackendDashboard)
 
 	return nil
 }

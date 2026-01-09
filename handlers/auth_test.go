@@ -10,7 +10,7 @@ import (
 
 func TestHandleLoginView_SessionCookieSet(t *testing.T) {
 	// Initialize session store
-	auth.SessionStore = session.New()
+	auth.SessionStore = *session.New()
 
 	// Create a test app
 	app := New()
