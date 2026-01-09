@@ -29,14 +29,14 @@ type ActionButton struct {
 
 // AdminLayoutViewModel contains data for the admin panel layout
 type AdminLayoutViewModel struct {
-	Page          string
-	Title         string
-	Breadcrumbs   []Breadcrumb
-	Navigation    []*AdminNavigationItem
-	ActionButtons []ActionButton
-	LayoutType    LayoutType
+	Page           string
+	Title          string
+	Breadcrumbs    []Breadcrumb
+	Navigation     []*AdminNavigationItem
+	ActionButtons  []ActionButton
+	LayoutType     LayoutType
 	ToastViewModel *ToastViewModel
-	CurrentUser   interface{} // Can be *models.User, using interface to avoid circular dependency
+	CurrentUser    interface{} // Can be *models.User, using interface to avoid circular dependency
 }
 
 // NewAdminLayoutViewModel creates a new admin layout view model
@@ -52,12 +52,12 @@ func NewAdminLayoutViewModel(page string, title string, c *fiber.Ctx) *AdminLayo
 	}
 
 	return &AdminLayoutViewModel{
-		Page:          page,
-		Title:         title,
-		Breadcrumbs:   []Breadcrumb{},
-		Navigation:    []*AdminNavigationItem{},
-		ActionButtons: []ActionButton{},
-		LayoutType:    layoutType,
+		Page:           page,
+		Title:          title,
+		Breadcrumbs:    []Breadcrumb{},
+		Navigation:     []*AdminNavigationItem{},
+		ActionButtons:  []ActionButton{},
+		LayoutType:     layoutType,
 		ToastViewModel: NewToastViewModel(),
 	}
 }
