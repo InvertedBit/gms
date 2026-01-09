@@ -12,15 +12,15 @@ import (
 
 func HandleBackendDashboard(c *fiber.Ctx) error {
 	adminLayoutModel := GetAdminLayoutModel(c, "Admin Dashboard")
-	
+
 	// Add breadcrumbs
 	adminLayoutModel.AddBreadcrumb("Home", "/")
 	adminLayoutModel.AddBreadcrumb("Admin", "/admin")
 	adminLayoutModel.AddBreadcrumb("Dashboard", "")
-	
+
 	// Add example action button
 	adminLayoutModel.AddActionButton("New Item", "/admin/items/new", "ri-add-line", true)
-	
+
 	dashboardPage := html.AdminPage{
 		Title:                "Admin Dashboard - GMS",
 		PageContent:          adminviews.DashboardPage(),

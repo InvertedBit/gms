@@ -64,12 +64,12 @@ func GetDefaultAdminNavigation() []*viewmodels.AdminNavigationItem {
 // GetAdminLayoutModel creates an admin layout view model with default navigation
 func GetAdminLayoutModel(c *fiber.Ctx, title string) *viewmodels.AdminLayoutViewModel {
 	layoutViewModel := viewmodels.NewAdminLayoutViewModel(title, title, c)
-	
+
 	// Add default navigation
 	for _, item := range GetDefaultAdminNavigation() {
 		layoutViewModel.AddNavigationItem(item)
 	}
-	
+
 	// Get current user if logged in
 	session, err := auth.SessionStore.Get(c)
 	if err == nil {
@@ -81,6 +81,6 @@ func GetAdminLayoutModel(c *fiber.Ctx, title string) *viewmodels.AdminLayoutView
 			}
 		}
 	}
-	
+
 	return layoutViewModel
 }
