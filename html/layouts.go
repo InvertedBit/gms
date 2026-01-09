@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	htmlpartials "github.com/invertedbit/gms/html/partials"
 	"github.com/invertedbit/gms/viewmodels"
 	"maragu.dev/gomponents"
 	htmx "maragu.dev/gomponents-htmx"
@@ -97,10 +98,7 @@ func (l *Layout) GetHeader() gomponents.Node {
 			),
 			html.Div(
 				html.Class("navbar-end"),
-				html.A(
-					html.Class("btn"),
-					gomponents.Text("Button"),
-				),
+				htmlpartials.ProfileMenu(l.LayoutViewModel.CurrentUser),
 			),
 		),
 	)
@@ -219,6 +217,12 @@ func (l *Layout) RenderFullLayout(w io.Writer, pageContent gomponents.Node) erro
 			),
 			html.Script(
 				html.Src("https://unpkg.com/hyperscript.org@0.9.14"),
+			),
+			html.Script(
+				html.Src("/js/wasm_exec.js"),
+			),
+			html.Script(
+				html.Src("/js/wasm_init.js"),
 			),
 		},
 		Body: l.GetBody(pageContent),

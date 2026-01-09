@@ -35,6 +35,11 @@ func AuthenticateUser(email, password string) (models.User, error) {
 }
 
 func GetUserFromUUID(uuid string) (models.User, error) {
+	cachedUser, exists := GetCachedUser(uuid)
+	if exists {
+		return *cachedUser, nil
+	}
+
 	user, err := gorm.G[models.User](database.DBConn).Where("id = ?", uuid).First(context.Background())
 	if err != nil {
 		return models.User{}, err
