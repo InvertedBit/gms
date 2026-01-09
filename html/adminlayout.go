@@ -265,6 +265,7 @@ func (a *AdminLayout) RenderBodyOnly(w io.Writer, pageContent gomponents.Node) e
 // RenderPartialOnly renders just the partial content with OOB updates
 func (a *AdminLayout) RenderPartialOnly(w io.Writer, pageContent gomponents.Node) error {
 	err := html.TitleEl(
+		htmx.SwapOOB("true"),
 		gomponents.Text(a.AdminLayoutViewModel.Page),
 	).Render(w)
 	if err != nil {
