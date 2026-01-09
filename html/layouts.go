@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	htmlpartials "github.com/invertedbit/gms/html/partials"
 	"github.com/invertedbit/gms/viewmodels"
 	"maragu.dev/gomponents"
 	htmx "maragu.dev/gomponents-htmx"
@@ -97,10 +98,7 @@ func (l *Layout) GetHeader() gomponents.Node {
 			),
 			html.Div(
 				html.Class("navbar-end"),
-				html.A(
-					html.Class("btn"),
-					gomponents.Text("Button"),
-				),
+				htmlpartials.ProfileMenu(l.LayoutViewModel.CurrentUser),
 			),
 		),
 	)
