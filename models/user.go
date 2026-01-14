@@ -1,10 +1,13 @@
 package models
 
+import "github.com/google/uuid"
+
 type User struct {
 	Model
-	Email             string `gorm:"type:string"`
-	EncryptedPassword string `gorm:"type:string"`
-	Role              string `gorm:"type:string"`
+	Email             string     `gorm:"type:string"`
+	EncryptedPassword string     `gorm:"type:string"`
+	RoleID            *uuid.UUID `gorm:"type:uuid"`
+	Role              *Role      `gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 func (u User) TableName() string {
