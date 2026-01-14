@@ -1,9 +1,6 @@
 package adminhandlers
 
 import (
-	"errors"
-	"strings"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
@@ -12,7 +9,6 @@ import (
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
-	"gorm.io/gorm"
 )
 
 func HandleRoleList(c *fiber.Ctx) error {
@@ -152,24 +148,4 @@ func buildRoleTableData() *components.TableData {
 	}
 
 	return roleTableData
-}
-
-// isDuplicateKeyError checks if the error is a unique constraint violation
-// Works across different database drivers (PostgreSQL, SQLite, etc.)
-func isDuplicateKeyError(err error) bool {
-	if err == nil {
-		return false
-	}
-	
-	// Check GORM's built-in error type
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return true
-	}
-	
-	// Check error message for common patterns
-	errMsg := strings.ToLower(err.Error())
-	return strings.Contains(errMsg, "duplicate") ||
-		strings.Contains(errMsg, "unique constraint") ||
-		strings.Contains(errMsg, "violates unique") ||
-		strings.Contains(errMsg, "23505") // PostgreSQL unique violation error code
 }
