@@ -1,6 +1,8 @@
 package viewmodels
 
 import (
+	"sort"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/stackus/hxgo/hxfiber"
 )
@@ -10,6 +12,9 @@ type AdminNavigationItem struct {
 	Label    string
 	Link     string
 	Icon     string // RemixIcon class name
+	IsOpen   bool   // Whether the navigation item is expanded (for items with children)
+	IsActive bool   // Whether the navigation item is currently active
+	Order    int
 	Children []*AdminNavigationItem
 }
 
@@ -83,4 +88,11 @@ func (a *AdminLayoutViewModel) AddActionButton(label string, link string, icon s
 		Icon:    icon,
 		Primary: primary,
 	})
+}
+
+func (a *AdminLayoutViewModel) GetNavigation() []*AdminNavigationItem {
+	sort.SliceStable(a.Navigation, func(i, j int) bool {
+		return a.Navigation[i].Order < a.Navigation[j].Order
+	})
+	return a.Navigation
 }

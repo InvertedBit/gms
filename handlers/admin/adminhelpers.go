@@ -1,4 +1,4 @@
-package handlers
+package adminhandlers
 
 import (
 	"fmt"
@@ -15,19 +15,21 @@ func GetDefaultAdminNavigation() []*viewmodels.AdminNavigationItem {
 			Label: "Dashboard",
 			Link:  "/admin/dashboard",
 			Icon:  "ri-dashboard-line",
+			Order: 10,
 		},
 		{
 			Label: "Content",
 			Icon:  "ri-file-list-line",
+			Order: 40,
 			Children: []*viewmodels.AdminNavigationItem{
 				{
-					Label: "Recipes",
-					Link:  "/admin/recipes",
+					Label: "Pages",
+					Link:  "/admin/pages",
 					Icon:  "ri-restaurant-line",
 				},
 				{
-					Label: "Ingredients",
-					Link:  "/admin/ingredients",
+					Label: "Posts",
+					Link:  "/admin/posts",
 					Icon:  "ri-plant-line",
 				},
 				{
@@ -40,6 +42,7 @@ func GetDefaultAdminNavigation() []*viewmodels.AdminNavigationItem {
 		{
 			Label: "Users",
 			Icon:  "ri-user-line",
+			Order: 90,
 			Children: []*viewmodels.AdminNavigationItem{
 				{
 					Label: "All Users",
@@ -57,6 +60,7 @@ func GetDefaultAdminNavigation() []*viewmodels.AdminNavigationItem {
 			Label: "Settings",
 			Link:  "/admin/settings",
 			Icon:  "ri-settings-line",
+			Order: 100,
 		},
 	}
 }
