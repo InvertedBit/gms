@@ -9,8 +9,10 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/storage/sqlite3/v2"
 	"github.com/invertedbit/gms/auth"
+	adminhandlers "github.com/invertedbit/gms/handlers/admin"
 	"github.com/invertedbit/gms/html"
 	htmlviews "github.com/invertedbit/gms/html/views"
+	"github.com/invertedbit/gms/middleware"
 	"github.com/invertedbit/gms/viewmodels"
 )
 
@@ -92,7 +94,7 @@ func New() *fiber.App {
 	app.Post("/auth/login", HandleLogin)
 	app.Get("/auth/logout", HandleLogout)
 
-	RegisterBackendRoutes(app.Group("/admin"))
+	adminhandlers.RegisterBackendRoutes(app.Group("/admin", middleware.RequireAuthenticatedUser))
 
 	app.Get("*", HandleNotFound)
 
