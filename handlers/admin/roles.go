@@ -1,6 +1,8 @@
 package adminhandlers
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
@@ -9,6 +11,7 @@ import (
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
+	"gorm.io/gorm"
 )
 
 func HandleRoleList(c *fiber.Ctx) error {
@@ -60,8 +63,7 @@ func HandleRoleCreate(c *fiber.Ctx) error {
 
 	if err := database.DBConn.Create(&role).Error; err != nil {
 		// Check for unique constraint violation
-		if err.Error() == "ERROR: duplicate key value violates unique constraint \"roles_name_key\" (SQLSTATE 23505)" ||
-			err.Error() == "UNIQUE constraint failed: auth.roles.name" {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			c.Status(400)
 			vm := viewmodels.NewRoleFormViewModel(&role, false)
 			vm.FormErrors["name"] = "A role with this name already exists"
@@ -121,13 +123,14 @@ func buildRoleTableData() *components.TableData {
 			{Name: "name", Label: "Name"},
 			{Name: "description", Label: "Description"},
 		},
-		Rows:          []components.TableRow{},
-		Editable:      true,
-		Deletable:     true,
-		EditRoute:     "/admin/roles",
-		DeleteRoute:   "/admin/roles",
-		IDField:       "id",
-		RefreshTarget: "#data-table-container",
+		Rows:             []components.TableRow{},
+		Editable:         true,
+		Deletable:        true,
+		EditRoute:        "/admin/roles",
+		DeleteRoute:      "/admin/roles",
+		IDField:          "id",
+		RefreshTarget:    "#data-table-container",
+		DeleteConfirmMsg: "Are you sure you want to delete this role? Users assigned to this role will have their role removed.",
 	}
 
 	for _, role := range roles {

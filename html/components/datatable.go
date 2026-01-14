@@ -19,15 +19,16 @@ type TableColumn struct {
 }
 
 type TableData struct {
-	Title         string
-	Columns       []TableColumn
-	Rows          []TableRow
-	Editable      bool
-	Deletable     bool
-	EditRoute     string
-	DeleteRoute   string
-	IDField       string // Field name to use as ID for edit/delete operations
-	RefreshTarget string // HTMX target to refresh after operations
+	Title             string
+	Columns           []TableColumn
+	Rows              []TableRow
+	Editable          bool
+	Deletable         bool
+	EditRoute         string
+	DeleteRoute       string
+	IDField           string // Field name to use as ID for edit/delete operations
+	RefreshTarget     string // HTMX target to refresh after operations
+	DeleteConfirmMsg  string // Custom confirmation message for delete operations
 }
 
 func DataTable(data *TableData) gomponents.Node {
@@ -80,7 +81,12 @@ func TableBody(rows []TableRow, columns []TableColumn, data *TableData) gomponen
 							html.Class("btn btn-xs btn-error"),
 							htmx.Delete(fmt.Sprintf("%s/%s", data.DeleteRoute, row.Values[data.IDField])),
 							htmx.Target(data.RefreshTarget),
-							htmx.Confirm(fmt.Sprintf("Are you sure you want to delete this item?")),
+							gomponents.If(data.DeleteConfirmMsg != "",
+								htmx.Confirm(data.DeleteConfirmMsg),
+							),
+							gomponents.If(data.DeleteConfirmMsg == "",
+								htmx.Confirm("Are you sure you want to delete this item?"),
+							),
 							html.I(html.Class("ri-delete-bin-line")),
 						),
 					),
