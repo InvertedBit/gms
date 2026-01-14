@@ -2,6 +2,7 @@ package adminhandlers
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/invertedbit/gms/database"
@@ -63,7 +64,7 @@ func HandleRoleCreate(c *fiber.Ctx) error {
 
 	if err := database.DBConn.Create(&role).Error; err != nil {
 		// Check for unique constraint violation
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
+		if isDuplicateKeyError(err) {
 			c.Status(400)
 			vm := viewmodels.NewRoleFormViewModel(&role, false)
 			vm.FormErrors["name"] = "A role with this name already exists"
@@ -88,7 +89,14 @@ func HandleRoleUpdate(c *fiber.Ctx) error {
 	role.Description = c.FormValue("description")
 
 	if err := database.DBConn.Save(&role).Error; err != nil {
-		return c.Status(400).SendString("Error updating role")
+		// Check for unique constraint violation
+		if isDuplicateKeyError(err) {
+			c.Status(400)
+			vm := viewmodels.NewRoleFormViewModel(&role, true)
+			vm.FormErrors["name"] = "A role with this name already exists"
+			return handlerutils.RenderNode(c, adminviews.RoleFormModal(vm))
+		}
+		return c.Status(500).SendString("Error updating role")
 	}
 
 	// Return updated table
@@ -144,4 +152,24 @@ func buildRoleTableData() *components.TableData {
 	}
 
 	return roleTableData
+}
+
+// isDuplicateKeyError checks if the error is a unique constraint violation
+// Works across different database drivers (PostgreSQL, SQLite, etc.)
+func isDuplicateKeyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	
+	// Check GORM's built-in error type
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return true
+	}
+	
+	// Check error message for common patterns
+	errMsg := strings.ToLower(err.Error())
+	return strings.Contains(errMsg, "duplicate") ||
+		strings.Contains(errMsg, "unique constraint") ||
+		strings.Contains(errMsg, "violates unique") ||
+		strings.Contains(errMsg, "23505") // PostgreSQL unique violation error code
 }
