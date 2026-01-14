@@ -1,7 +1,10 @@
 package adminhandlers
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
@@ -10,7 +13,7 @@ import (
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
 	"golang.org/x/crypto/bcrypt"
-	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func HandleUserList(c *fiber.Ctx) error {
@@ -83,8 +86,7 @@ func HandleUserCreate(c *fiber.Ctx) error {
 
 	if err := database.DBConn.Create(&user).Error; err != nil {
 		// Check for unique constraint violation on email
-		if err.Error() == "ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)" ||
-			err.Error() == "UNIQUE constraint failed: auth.users.email" {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			c.Status(400)
 			var roles []models.Role
 			database.DBConn.Order("name ASC").Find(&roles)
@@ -166,13 +168,14 @@ func buildUserTableData() *components.TableData {
 			{Name: "email", Label: "Email"},
 			{Name: "role", Label: "Role"},
 		},
-		Rows:          []components.TableRow{},
-		Editable:      true,
-		Deletable:     true,
-		EditRoute:     "/admin/users",
-		DeleteRoute:   "/admin/users",
-		IDField:       "id",
-		RefreshTarget: "#data-table-container",
+		Rows:             []components.TableRow{},
+		Editable:         true,
+		Deletable:        true,
+		EditRoute:        "/admin/users",
+		DeleteRoute:      "/admin/users",
+		IDField:          "id",
+		RefreshTarget:    "#data-table-container",
+		DeleteConfirmMsg: "Are you sure you want to delete this user? This action cannot be undone.",
 	}
 
 	for _, user := range users {
