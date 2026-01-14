@@ -1,10 +1,7 @@
 package adminhandlers
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
@@ -64,7 +61,7 @@ func HandleRoleList(c *fiber.Ctx) error {
 
 func HandleRoleNew(c *fiber.Ctx) error {
 	vm := viewmodels.NewRoleFormViewModel(nil, false)
-	return handlerutils.ReturnHandler(c, adminviews.RoleFormModal(vm))
+	return handlerutils.RenderNode(c, adminviews.RoleFormModal(vm))
 }
 
 func HandleRoleEdit(c *fiber.Ctx) error {
@@ -76,7 +73,7 @@ func HandleRoleEdit(c *fiber.Ctx) error {
 	}
 
 	vm := viewmodels.NewRoleFormViewModel(&role, true)
-	return handlerutils.ReturnHandler(c, adminviews.RoleFormModal(vm))
+	return handlerutils.RenderNode(c, adminviews.RoleFormModal(vm))
 }
 
 func HandleRoleCreate(c *fiber.Ctx) error {
@@ -157,5 +154,5 @@ func renderRoleTable(c *fiber.Ctx) error {
 		})
 	}
 
-	return handlerutils.ReturnHandler(c, components.DataTable(roleTableData))
+	return handlerutils.RenderNode(c, components.DataTable(roleTableData))
 }
