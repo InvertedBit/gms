@@ -1,8 +1,6 @@
 package adminhandlers
 
 import (
-	"errors"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/invertedbit/gms/database"
@@ -13,7 +11,6 @@ import (
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 func HandleUserList(c *fiber.Ctx) error {
@@ -85,8 +82,8 @@ func HandleUserCreate(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Create(&user).Error; err != nil {
-		// Check for unique constraint violation on email
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
+		// Check for unique constraint violation
+		if isDuplicateKeyError(err) {
 			c.Status(400)
 			var roles []models.Role
 			database.DBConn.Order("name ASC").Find(&roles)
@@ -133,7 +130,16 @@ func HandleUserUpdate(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Save(&user).Error; err != nil {
-		return c.Status(400).SendString("Error updating user")
+		// Check for unique constraint violation
+		if isDuplicateKeyError(err) {
+			c.Status(400)
+			var roles []models.Role
+			database.DBConn.Order("name ASC").Find(&roles)
+			vm := viewmodels.NewUserFormViewModel(&user, roles, true)
+			vm.FormErrors["email"] = "A user with this email already exists"
+			return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
+		}
+		return c.Status(500).SendString("Error updating user")
 	}
 
 	// Return updated table
