@@ -70,7 +70,7 @@ func HandleUserNew(c *fiber.Ctx) error {
 	database.DBConn.Order("name ASC").Find(&roles)
 
 	vm := viewmodels.NewUserFormViewModel(nil, roles, false)
-	return handlerutils.ReturnHandler(c, adminviews.UserFormModal(vm))
+	return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
 }
 
 func HandleUserEdit(c *fiber.Ctx) error {
@@ -85,7 +85,7 @@ func HandleUserEdit(c *fiber.Ctx) error {
 	database.DBConn.Order("name ASC").Find(&roles)
 
 	vm := viewmodels.NewUserFormViewModel(&user, roles, true)
-	return handlerutils.ReturnHandler(c, adminviews.UserFormModal(vm))
+	return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
 }
 
 func HandleUserCreate(c *fiber.Ctx) error {
@@ -204,6 +204,6 @@ func renderUserTable(c *fiber.Ctx) error {
 		})
 	}
 
-	return handlerutils.ReturnHandler(c, components.DataTable(userTableData))
+	return handlerutils.RenderNode(c, components.DataTable(userTableData))
 }
 

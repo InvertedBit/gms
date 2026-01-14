@@ -21,16 +21,15 @@ func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
 		title = "Edit Role"
 	}
 
-	method := "POST"
-	if vm.IsEdit {
-		method = "PUT"
-	}
-
 	return components.Modal("role-form-modal", title,
 		html.FormEl(
-			html.Method(method),
 			html.Action(vm.SubmitURL),
-			htmx.Request(method, vm.SubmitURL),
+			gomponents.If(vm.IsEdit,
+				htmx.Put(vm.SubmitURL),
+			),
+			gomponents.If(!vm.IsEdit,
+				htmx.Post(vm.SubmitURL),
+			),
 			htmx.Target("#data-table-container"),
 			htmx.Swap("outerHTML"),
 			html.Class("space-y-4"),
