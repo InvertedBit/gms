@@ -23,38 +23,7 @@ func HandleUserList(c *fiber.Ctx) error {
 	// Add action button
 	adminLayoutModel.AddActionButton("Add user", "/admin/users/new", "ri-add-line", true)
 
-	// Fetch users from database
-	var users []models.User
-	database.DBConn.Preload("Role").Order("email ASC").Find(&users)
-
-	// Build table data
-	userTableData := &components.TableData{
-		Columns: []components.TableColumn{
-			{Name: "email", Label: "Email"},
-			{Name: "role", Label: "Role"},
-		},
-		Rows:          []components.TableRow{},
-		Editable:      true,
-		Deletable:     true,
-		EditRoute:     "/admin/users",
-		DeleteRoute:   "/admin/users",
-		IDField:       "id",
-		RefreshTarget: "#data-table-container",
-	}
-
-	for _, user := range users {
-		roleName := ""
-		if user.Role != nil {
-			roleName = user.Role.Name
-		}
-		userTableData.Rows = append(userTableData.Rows, components.TableRow{
-			Values: map[string]string{
-				"id":    user.ID.String(),
-				"email": user.Email,
-				"role":  roleName,
-			},
-		})
-	}
+	userTableData := buildUserTableData()
 
 	userListPage := html.AdminPage{
 		Title:                "Users - GMS",
@@ -113,7 +82,17 @@ func HandleUserCreate(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Create(&user).Error; err != nil {
-		return c.Status(400).SendString("Error creating user")
+		// Check for unique constraint violation on email
+		if err.Error() == "ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)" ||
+			err.Error() == "UNIQUE constraint failed: auth.users.email" {
+			c.Status(400)
+			var roles []models.Role
+			database.DBConn.Order("name ASC").Find(&roles)
+			vm := viewmodels.NewUserFormViewModel(&user, roles, false)
+			vm.FormErrors["email"] = "A user with this email already exists"
+			return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
+		}
+		return c.Status(500).SendString("Error creating user")
 	}
 
 	// Return updated table
@@ -171,6 +150,12 @@ func HandleUserDelete(c *fiber.Ctx) error {
 }
 
 func renderUserTable(c *fiber.Ctx) error {
+	userTableData := buildUserTableData()
+	return handlerutils.RenderNode(c, components.DataTable(userTableData))
+}
+
+// buildUserTableData fetches users from database and builds table data
+func buildUserTableData() *components.TableData {
 	// Fetch users from database
 	var users []models.User
 	database.DBConn.Preload("Role").Order("email ASC").Find(&users)
@@ -204,6 +189,6 @@ func renderUserTable(c *fiber.Ctx) error {
 		})
 	}
 
-	return handlerutils.RenderNode(c, components.DataTable(userTableData))
+	return userTableData
 }
 

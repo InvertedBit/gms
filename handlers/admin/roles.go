@@ -21,34 +21,7 @@ func HandleRoleList(c *fiber.Ctx) error {
 	// Add action button
 	adminLayoutModel.AddActionButton("Add role", "/admin/roles/new", "ri-add-line", true)
 
-	// Fetch roles from database
-	var roles []models.Role
-	database.DBConn.Order("name ASC").Find(&roles)
-
-	// Build table data
-	roleTableData := &components.TableData{
-		Columns: []components.TableColumn{
-			{Name: "name", Label: "Name"},
-			{Name: "description", Label: "Description"},
-		},
-		Rows:          []components.TableRow{},
-		Editable:      true,
-		Deletable:     true,
-		EditRoute:     "/admin/roles",
-		DeleteRoute:   "/admin/roles",
-		IDField:       "id",
-		RefreshTarget: "#data-table-container",
-	}
-
-	for _, role := range roles {
-		roleTableData.Rows = append(roleTableData.Rows, components.TableRow{
-			Values: map[string]string{
-				"id":          role.ID.String(),
-				"name":        role.Name,
-				"description": role.Description,
-			},
-		})
-	}
+	roleTableData := buildRoleTableData()
 
 	roleListPage := html.AdminPage{
 		Title:                "Roles - GMS",
@@ -86,8 +59,15 @@ func HandleRoleCreate(c *fiber.Ctx) error {
 	}
 
 	if err := database.DBConn.Create(&role).Error; err != nil {
-		// TODO: Handle validation errors properly
-		return c.Status(400).SendString("Error creating role")
+		// Check for unique constraint violation
+		if err.Error() == "ERROR: duplicate key value violates unique constraint \"roles_name_key\" (SQLSTATE 23505)" ||
+			err.Error() == "UNIQUE constraint failed: auth.roles.name" {
+			c.Status(400)
+			vm := viewmodels.NewRoleFormViewModel(&role, false)
+			vm.FormErrors["name"] = "A role with this name already exists"
+			return handlerutils.RenderNode(c, adminviews.RoleFormModal(vm))
+		}
+		return c.Status(500).SendString("Error creating role")
 	}
 
 	// Return updated table
@@ -125,6 +105,12 @@ func HandleRoleDelete(c *fiber.Ctx) error {
 }
 
 func renderRoleTable(c *fiber.Ctx) error {
+	roleTableData := buildRoleTableData()
+	return handlerutils.RenderNode(c, components.DataTable(roleTableData))
+}
+
+// buildRoleTableData fetches roles from database and builds table data
+func buildRoleTableData() *components.TableData {
 	// Fetch roles from database
 	var roles []models.Role
 	database.DBConn.Order("name ASC").Find(&roles)
@@ -154,5 +140,5 @@ func renderRoleTable(c *fiber.Ctx) error {
 		})
 	}
 
-	return handlerutils.RenderNode(c, components.DataTable(roleTableData))
+	return roleTableData
 }
