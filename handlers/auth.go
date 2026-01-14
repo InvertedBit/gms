@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/invertedbit/gms/auth"
+	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
 	htmlviews "github.com/invertedbit/gms/html/views"
 	hx "github.com/stackus/hxgo"
@@ -34,7 +35,7 @@ func HandleLoginView(c *fiber.Ctx) error {
 		LayoutViewModel: GetLayoutModel(c, title),
 	}
 
-	return ReturnHandler(c, loginPage)
+	return handlerutils.ReturnHandler(c, loginPage)
 }
 
 func HandleLogin(c *fiber.Ctx) error {

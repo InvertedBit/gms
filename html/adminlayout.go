@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	adminpartials "github.com/invertedbit/gms/html/partials/admin"
 	"github.com/invertedbit/gms/viewmodels"
 	"maragu.dev/gomponents"
 	htmx "maragu.dev/gomponents-htmx"
@@ -54,10 +55,7 @@ func (a *AdminLayout) GetAdminHeader() gomponents.Node {
 					),
 				),
 				// Title
-				html.H1(
-					html.Class("text-2xl font-bold"),
-					gomponents.Text(a.AdminLayoutViewModel.Title),
-				),
+				adminpartials.PageHeading(a.AdminLayoutViewModel.Title),
 			),
 			// Right side: Action buttons
 			gomponents.If(len(a.AdminLayoutViewModel.ActionButtons) > 0,
@@ -88,7 +86,7 @@ func (a *AdminLayout) GetAdminNavigation() gomponents.Node {
 	return html.Aside(
 		html.ID("admin-navigation"),
 		gomponents.If(a.IsOOB(), htmx.SwapOOB("true")),
-		html.Class("w-64 bg-base-200 border-r border-base-300 flex-shrink-0"),
+		html.Class("w-64 bg-base-200 border-r border-base-300 flex-shrink-0 flex flex-col justify-between"),
 		html.Div(
 			html.Class("p-4"),
 			html.Div(
@@ -97,10 +95,14 @@ func (a *AdminLayout) GetAdminNavigation() gomponents.Node {
 			),
 			html.Ul(
 				html.Class("menu"),
-				gomponents.Map(a.AdminLayoutViewModel.Navigation, func(item *viewmodels.AdminNavigationItem) gomponents.Node {
+				gomponents.Map(a.AdminLayoutViewModel.GetNavigation(), func(item *viewmodels.AdminNavigationItem) gomponents.Node {
 					return a.renderNavigationItem(item)
 				}),
 			),
+		),
+		html.Div(
+			html.Class("p-4 self-end"),
+			gomponents.Text("User card"),
 		),
 	)
 }
@@ -149,7 +151,7 @@ func (a *AdminLayout) GetAdminFooter() gomponents.Node {
 				html.Class("font-semibold"),
 				gomponents.Text("GMS"),
 			),
-			gomponents.Text(" · Guild Management System"),
+			gomponents.Text(" · Gontent Management System"),
 		),
 	)
 }

@@ -1,9 +1,10 @@
-package handlers
+package adminhandlers
 
 import (
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
+	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	hx "github.com/stackus/hxgo"
@@ -27,10 +28,13 @@ func HandleBackendDashboard(c *fiber.Ctx) error {
 		AdminLayoutViewModel: adminLayoutModel,
 	}
 
-	return ReturnHandler(c, dashboardPage)
+	return handlerutils.ReturnHandler(c, dashboardPage)
 }
 
 func HandleBackendDashboardRedirect(c *fiber.Ctx) error {
 	hxfiber.Response(c, hx.Status(http.StatusMovedPermanently), hx.Redirect("/admin/dashboard"))
-	return nil
+	if hxfiber.IsHtmx(c) {
+		return nil
+	}
+	return c.Redirect("/admin/dashboard")
 }
