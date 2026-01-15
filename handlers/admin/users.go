@@ -63,7 +63,7 @@ func HandleUserEdit(c *fiber.Ctx) error {
 func HandleUserCreate(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	roleSlug := c.FormValue("role")
+	roleSlug := c.FormValue("role_slug")
 
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -120,7 +120,7 @@ func HandleUserUpdate(c *fiber.Ctx) error {
 		user.EncryptedPassword = string(hashedPassword)
 	}
 
-	roleSlug := c.FormValue("role")
+	roleSlug := c.FormValue("role_slug")
 	if roleSlug != "" {
 		user.RoleSlug = roleSlug
 	} else {
