@@ -15,7 +15,7 @@ func RegisterBackendRoutes(router fiber.Router) error {
 	// User routes
 	router.Get("/users", HandleUserList)
 	router.Get("/users/new", HandleUserNew)
-	router.Get("/users/:id", HandleUserEdit)
+	router.Get("/users/:id/edit", HandleUserEdit)
 	router.Post("/users", HandleUserCreate)
 	router.Put("/users/:id", HandleUserUpdate)
 	router.Delete("/users/:id", HandleUserDelete)

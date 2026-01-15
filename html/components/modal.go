@@ -22,7 +22,7 @@ func Modal(id string, title string, content gomponents.Node) gomponents.Node {
 				content,
 			),
 		),
-		html.FormEl(
+		html.Form(
 			html.Method("dialog"),
 			html.Class("modal-backdrop"),
 			html.Button(
@@ -36,8 +36,11 @@ func Modal(id string, title string, content gomponents.Node) gomponents.Node {
 }
 
 // ModalContainer renders the container for modals
-func ModalContainer() gomponents.Node {
+func ModalContainer(oob bool) gomponents.Node {
 	return html.Div(
 		html.ID("modal-container"),
+		gomponents.If(oob,
+			htmx.SwapOOB("true"),
+		),
 	)
 }

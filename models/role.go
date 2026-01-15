@@ -2,10 +2,12 @@ package models
 
 type Role struct {
 	Model
-	Name        string `gorm:"uniqueIndex;type:string;size:50;not null"`
+	Slug        string `gorm:"uniqueIndex;type:string;size:50;not null"`
+	Name        string `gorm:"type:string;size:255;not null"`
 	Description string `gorm:"type:string;size:255"`
+	Users       []User `gorm:"foreignKey:RoleSlug;references:Slug"`
 }
 
 func (r Role) TableName() string {
-	return "auth.roles"
+	return "public.roles"
 }

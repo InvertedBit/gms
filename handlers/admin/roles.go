@@ -1,6 +1,8 @@
 package adminhandlers
 
 import (
+	"context"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
@@ -9,6 +11,7 @@ import (
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
+	"gorm.io/gorm"
 )
 
 func HandleRoleList(c *fiber.Ctx) error {
@@ -51,10 +54,12 @@ func HandleRoleEdit(c *fiber.Ctx) error {
 
 func HandleRoleCreate(c *fiber.Ctx) error {
 	name := c.FormValue("name")
+	slug := c.FormValue("slug")
 	description := c.FormValue("description")
 
 	role := models.Role{
 		Name:        name,
+		Slug:        slug,
 		Description: description,
 	}
 
@@ -82,6 +87,7 @@ func HandleRoleUpdate(c *fiber.Ctx) error {
 	}
 
 	role.Name = c.FormValue("name")
+	role.Slug = c.FormValue("slug")
 	role.Description = c.FormValue("description")
 
 	if err := database.DBConn.Save(&role).Error; err != nil {
@@ -112,14 +118,17 @@ func HandleRoleDelete(c *fiber.Ctx) error {
 
 func renderRoleTable(c *fiber.Ctx) error {
 	roleTableData := buildRoleTableData()
+	handlerutils.RenderNode(c, components.ModalContainer(true))
 	return handlerutils.RenderNode(c, components.DataTable(roleTableData))
 }
 
 // buildRoleTableData fetches roles from database and builds table data
 func buildRoleTableData() *components.TableData {
 	// Fetch roles from database
-	var roles []models.Role
-	database.DBConn.Order("name ASC").Find(&roles)
+	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
+	if err != nil {
+		return &components.TableData{}
+	}
 
 	// Build table data
 	roleTableData := &components.TableData{

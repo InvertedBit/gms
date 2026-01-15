@@ -10,19 +10,22 @@ import (
 
 func RoleListPage(roleTableData *components.TableData) gomponents.Node {
 	return html.Div(
-		components.ModalContainer(),
+		components.ModalContainer(false),
 		components.DataTable(roleTableData),
 	)
 }
 
 func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
+	if vm == nil {
+		return gomponents.Text("Error: ViewModel is nil")
+	}
 	title := "Create Role"
 	if vm.IsEdit {
 		title = "Edit Role"
 	}
 
 	return components.Modal("role-form-modal", title,
-		html.FormEl(
+		html.Form(
 			html.Action(vm.SubmitURL),
 			gomponents.If(vm.IsEdit,
 				htmx.Put(vm.SubmitURL),
@@ -49,16 +52,42 @@ func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
 					html.Name("name"),
 					html.Class("input input-bordered"),
 					html.Required(),
-					gomponents.If(vm.Role != nil && vm.Role.Name != "",
-						html.Value(vm.Role.Name),
-					),
+					html.Value(vm.GetRoleName()),
 				),
-				gomponents.If(vm.FormErrors["name"] != "",
+				gomponents.If(vm.GetFormError("name") != "",
 					html.Label(
 						html.Class("label"),
 						html.Span(
 							html.Class("label-text-alt text-error"),
-							gomponents.Text(vm.FormErrors["name"]),
+							gomponents.Text(vm.GetFormError("name")),
+						),
+					),
+				),
+			),
+
+			// Slug field
+			html.Div(
+				html.Class("form-control"),
+				html.Label(
+					html.Class("label"),
+					html.Span(
+						html.Class("label-text"),
+						gomponents.Text("Slug"),
+					),
+				),
+				html.Input(
+					html.Type("text"),
+					html.Name("slug"),
+					html.Class("input input-bordered"),
+					html.Required(),
+					html.Value(vm.GetRoleSlug()),
+				),
+				gomponents.If(vm.GetFormError("slug") != "",
+					html.Label(
+						html.Class("label"),
+						html.Span(
+							html.Class("label-text-alt text-error"),
+							gomponents.Text(vm.GetFormError("slug")),
 						),
 					),
 				),
@@ -77,9 +106,7 @@ func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
 				html.Textarea(
 					html.Name("description"),
 					html.Class("textarea textarea-bordered"),
-					gomponents.If(vm.Role != nil && vm.Role.Description != "",
-						gomponents.Text(vm.Role.Description),
-					),
+					gomponents.Text(vm.GetRoleDescription()),
 				),
 			),
 

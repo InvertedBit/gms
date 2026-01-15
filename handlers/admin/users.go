@@ -1,6 +1,8 @@
 package adminhandlers
 
 import (
+	"context"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/invertedbit/gms/database"
@@ -11,6 +13,7 @@ import (
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func HandleUserList(c *fiber.Ctx) error {
@@ -60,7 +63,7 @@ func HandleUserEdit(c *fiber.Ctx) error {
 func HandleUserCreate(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	roleIDStr := c.FormValue("role_id")
+	roleSlug := c.FormValue("role")
 
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -69,16 +72,15 @@ func HandleUserCreate(c *fiber.Ctx) error {
 	}
 
 	user := models.User{
+		Model: models.Model{
+			ID: uuid.New(),
+		},
 		Email:             email,
 		EncryptedPassword: string(hashedPassword),
 	}
 
-	if roleIDStr != "" {
-		roleID, err := uuid.Parse(roleIDStr)
-		if err != nil {
-			return c.Status(400).SendString("Invalid role ID")
-		}
-		user.RoleID = &roleID
+	if roleSlug != "" {
+		user.RoleSlug = roleSlug
 	}
 
 	if err := database.DBConn.Create(&user).Error; err != nil {
@@ -107,7 +109,7 @@ func HandleUserUpdate(c *fiber.Ctx) error {
 	}
 
 	user.Email = c.FormValue("email")
-	
+
 	// Only update password if provided
 	password := c.FormValue("password")
 	if password != "" {
@@ -118,15 +120,11 @@ func HandleUserUpdate(c *fiber.Ctx) error {
 		user.EncryptedPassword = string(hashedPassword)
 	}
 
-	roleIDStr := c.FormValue("role_id")
-	if roleIDStr != "" {
-		roleID, err := uuid.Parse(roleIDStr)
-		if err != nil {
-			return c.Status(400).SendString("Invalid role ID")
-		}
-		user.RoleID = &roleID
+	roleSlug := c.FormValue("role")
+	if roleSlug != "" {
+		user.RoleSlug = roleSlug
 	} else {
-		user.RoleID = nil
+		user.RoleSlug = ""
 	}
 
 	if err := database.DBConn.Save(&user).Error; err != nil {
@@ -186,8 +184,11 @@ func buildUserTableData() *components.TableData {
 
 	for _, user := range users {
 		roleName := ""
-		if user.Role != nil {
-			roleName = user.Role.Name
+		if user.RoleSlug != "" {
+			role, err := gorm.G[models.Role](database.DBConn).Where("slug = ?", user.RoleSlug).First(context.Background())
+			if err == nil {
+				roleName = role.Name
+			}
 		}
 		userTableData.Rows = append(userTableData.Rows, components.TableRow{
 			Values: map[string]string{
@@ -200,4 +201,3 @@ func buildUserTableData() *components.TableData {
 
 	return userTableData
 }
-
