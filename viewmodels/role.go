@@ -24,3 +24,31 @@ func NewRoleFormViewModel(role *models.Role, isEdit bool) *RoleFormViewModel {
 		FormErrors: make(map[string]string),
 	}
 }
+
+func (vm *RoleFormViewModel) GetRoleName() string {
+	if vm.Role == nil {
+		return ""
+	}
+	return vm.Role.Name
+}
+
+func (vm *RoleFormViewModel) GetRoleSlug() string {
+	if vm.Role == nil {
+		return ""
+	}
+	return vm.Role.Slug
+}
+
+func (vm *RoleFormViewModel) GetRoleDescription() string {
+	if vm.Role == nil {
+		return ""
+	}
+	return vm.Role.Description
+}
+
+func (vm *RoleFormViewModel) GetFormError(field string) string {
+	if err, exists := vm.FormErrors[field]; exists {
+		return err
+	}
+	return ""
+}

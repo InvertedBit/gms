@@ -11,19 +11,22 @@ import (
 
 func UserListPage(userTableData *components.TableData) gomponents.Node {
 	return html.Div(
-		components.ModalContainer(),
+		components.ModalContainer(false),
 		components.DataTable(userTableData),
 	)
 }
 
 func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
+	if vm == nil {
+		return gomponents.Text("Error: ViewModel is nil")
+	}
 	title := "Create User"
 	if vm.IsEdit {
 		title = "Edit User"
 	}
 
 	return components.Modal("user-form-modal", title,
-		html.FormEl(
+		html.Form(
 			html.Action(vm.SubmitURL),
 			gomponents.If(vm.IsEdit,
 				htmx.Put(vm.SubmitURL),
@@ -50,16 +53,14 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 					html.Name("email"),
 					html.Class("input input-bordered"),
 					html.Required(),
-					gomponents.If(vm.User != nil && vm.User.Email != "",
-						html.Value(vm.User.Email),
-					),
+					html.Value(vm.GetUserEmail()),
 				),
-				gomponents.If(vm.FormErrors["email"] != "",
+				gomponents.If(vm.GetFormError("email") != "",
 					html.Label(
 						html.Class("label"),
 						html.Span(
 							html.Class("label-text-alt text-error"),
-							gomponents.Text(vm.FormErrors["email"]),
+							gomponents.Text(vm.GetFormError("email")),
 						),
 					),
 				),
@@ -88,12 +89,12 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 						html.Required(),
 					),
 				),
-				gomponents.If(vm.FormErrors["password"] != "",
+				gomponents.If(vm.GetFormError("password") != "",
 					html.Label(
 						html.Class("label"),
 						html.Span(
 							html.Class("label-text-alt text-error"),
-							gomponents.Text(vm.FormErrors["password"]),
+							gomponents.Text(vm.GetFormError("password")),
 						),
 					),
 				),
@@ -119,7 +120,7 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 					gomponents.Map(vm.Roles, func(role models.Role) gomponents.Node {
 						return html.Option(
 							html.Value(role.ID.String()),
-							gomponents.If(vm.User != nil && vm.User.RoleID != nil && *vm.User.RoleID == role.ID,
+							gomponents.If(vm.GetUserRoleSlug() == role.Slug,
 								html.Selected(),
 							),
 							gomponents.Text(role.Name),
@@ -148,4 +149,3 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 		),
 	)
 }
-
