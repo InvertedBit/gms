@@ -31,11 +31,13 @@ func main() {
 
 	// Create default roles
 	adminRole := models.Role{
-		Name:        "admin",
+		Slug:        "admin",
+		Name:        "Admin",
 		Description: "Administrator with full access",
 	}
 	userRole := models.Role{
-		Name:        "user",
+		Slug:        "user",
+		Name:        "User",
 		Description: "Regular user",
 	}
 

@@ -95,7 +95,7 @@ func HandleRoleUpdate(c *fiber.Ctx) error {
 		if isDuplicateKeyError(err) {
 			c.Status(400)
 			vm := viewmodels.NewRoleFormViewModel(&role, true)
-			vm.FormErrors["name"] = "A role with this name already exists"
+			vm.FormErrors["slug"] = "A role with this slug already exists"
 			return handlerutils.RenderNode(c, adminviews.RoleFormModal(vm))
 		}
 		return c.Status(500).SendString("Error updating role")

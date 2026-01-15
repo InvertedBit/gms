@@ -111,7 +111,7 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 					),
 				),
 				html.Select(
-					html.Name("role_id"),
+					html.Name("role_slug"),
 					html.Class("select select-bordered"),
 					html.Option(
 						html.Value(""),
@@ -119,7 +119,7 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 					),
 					gomponents.Map(vm.Roles, func(role models.Role) gomponents.Node {
 						return html.Option(
-							html.Value(role.ID.String()),
+							html.Value(role.Slug),
 							gomponents.If(vm.GetUserRoleSlug() == role.Slug,
 								html.Selected(),
 							),

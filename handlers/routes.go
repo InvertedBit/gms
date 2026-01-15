@@ -59,7 +59,9 @@ func GetLayoutModel(c *fiber.Ctx, title string) *viewmodels.LayoutViewModel {
 	if userId != nil && userId != "" {
 		currentUser, err := auth.GetUserFromUUID(fmt.Sprintf("%v", userId))
 		if err != nil {
-			panic(err)
+			auth.RemoveCachedUser(fmt.Sprintf("%v", userId))
+			session.Destroy()
+			fmt.Println(err)
 		}
 		layoutViewModel.CurrentUser = &currentUser
 	}
