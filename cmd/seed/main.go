@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 
+	"github.com/invertedbit/gms/auth"
 	"github.com/invertedbit/gms/database"
 	"github.com/invertedbit/gms/models"
 	"github.com/joho/godotenv"
@@ -26,6 +28,8 @@ func main() {
 	if err != nil {
 		panic("failed to connect database")
 	}
+
+	db.AutoMigrate(&models.Role{}, &models.User{})
 
 	database.DBConn = db
 
@@ -68,6 +72,30 @@ func main() {
 		fmt.Printf("Error checking for user role: %v\n", result.Error)
 	} else {
 		fmt.Println("'user' role already exists")
+	}
+
+	hashedPassword, err := auth.HashPassword("1337@localhost")
+	if err != nil {
+		fmt.Printf("Error hashing password: %v\n", err)
+		return
+	}
+
+	adminUser := models.User{
+		Email:             "alex@hl4b.ch",
+		RoleSlug:          "admin",
+		EncryptedPassword: hashedPassword,
+	}
+
+	// Check if admin user already exists
+	existingAdminUser, err := gorm.G[models.User](db).Where("email = ?", adminUser.Email).First(context.Background())
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		if err := gorm.G[models.User](db).Create(context.Background(), &adminUser); err != nil {
+			fmt.Printf("Error creating admin user: %v\n", err)
+		} else {
+			fmt.Printf("Created admin user with email '%s'\n", adminUser.Email)
+		}
+	} else {
+		fmt.Printf("Admin user with email '%s' already exists\n", existingAdminUser.Email)
 	}
 
 	fmt.Println("Seed completed successfully!")

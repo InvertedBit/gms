@@ -2,6 +2,7 @@ package adminhandlers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -38,23 +39,31 @@ func HandleUserList(c *fiber.Ctx) error {
 }
 
 func HandleUserNew(c *fiber.Ctx) error {
-	var roles []models.Role
-	database.DBConn.Order("name ASC").Find(&roles)
+	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return c.Status(500).SendString("Error fetching roles")
+	}
 
 	vm := viewmodels.NewUserFormViewModel(nil, roles, false)
 	return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
 }
 
 func HandleUserEdit(c *fiber.Ctx) error {
+	fmt.Println("HandleUserEdit called")
 	userID := c.Params("id")
-
-	var user models.User
-	if err := database.DBConn.Preload("Role").Where("id = ?", userID).First(&user).Error; err != nil {
+	fmt.Printf("Got user id: %s\n", userID)
+	user, err := gorm.G[models.User](database.DBConn).Where("id = ?", userID).First(context.Background())
+	if err != nil {
+		fmt.Println(err)
 		return c.Status(404).SendString("User not found")
 	}
 
-	var roles []models.Role
-	database.DBConn.Order("name ASC").Find(&roles)
+	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return c.Status(500).SendString("Error fetching roles")
+	}
 
 	vm := viewmodels.NewUserFormViewModel(&user, roles, true)
 	return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
@@ -175,7 +184,7 @@ func buildUserTableData() *components.TableData {
 		Rows:             []components.TableRow{},
 		Editable:         true,
 		Deletable:        true,
-		EditRoute:        "/admin/users",
+		EditRoute:        "/admin/users/edit",
 		DeleteRoute:      "/admin/users",
 		IDField:          "id",
 		RefreshTarget:    "#data-table-container",

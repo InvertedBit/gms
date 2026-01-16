@@ -19,16 +19,16 @@ type TableColumn struct {
 }
 
 type TableData struct {
-	Title             string
-	Columns           []TableColumn
-	Rows              []TableRow
-	Editable          bool
-	Deletable         bool
-	EditRoute         string
-	DeleteRoute       string
-	IDField           string // Field name to use as ID for edit/delete operations
-	RefreshTarget     string // HTMX target to refresh after operations
-	DeleteConfirmMsg  string // Custom confirmation message for delete operations
+	Title            string
+	Columns          []TableColumn
+	Rows             []TableRow
+	Editable         bool
+	Deletable        bool
+	EditRoute        string
+	DeleteRoute      string
+	IDField          string // Field name to use as ID for edit/delete operations
+	RefreshTarget    string // HTMX target to refresh after operations
+	DeleteConfirmMsg string // Custom confirmation message for delete operations
 }
 
 func DataTable(data *TableData) gomponents.Node {

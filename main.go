@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// AutoMigrate for auth schema models
-	db.AutoMigrate(&models.Role{})
+	db.AutoMigrate(&models.Role{}, &models.User{})
 
 	database.DBConn = db
 

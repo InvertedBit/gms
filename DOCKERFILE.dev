@@ -1,0 +1,46 @@
+FROM golang:1.25-alpine AS base
+
+# ENV NODE_VERSION=24
+
+FROM node:24-alpine AS node
+
+FROM base as builder
+COPY --from=node /usr/lib /usr/lib
+COPY --from=node /usr/local/share /usr/local/share
+COPY --from=node /usr/local/lib /usr/local/lib
+COPY --from=node /usr/local/include /usr/local/include
+COPY --from=node /usr/local/bin /usr/local/bin
+
+
+
+COPY package-lock.json /app/
+COPY package.json /app/
+WORKDIR /app
+RUN npm ci
+
+
+
+## # Install required dependencies
+## RUN apk add --no-cache libstdc++ curl
+## 
+## # Download and extract Node.js binary
+## RUN curl -fsSLO --compressed "https://unofficial-builds.nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64-musl.tar.xz" \
+##     && echo "3da6503abb664dc557f69c93ab03f9b15b504ccf13eea279cbfbd589cd7a18f4  node-v${NODE_VERSION}-linux-x64-musl.tar.xz" | sha256sum -c - \
+##     && tar -xJf "node-v${NODE_VERSION}-linux-x64-musl.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
+##     && ln -s /usr/local/bin/node /usr/local/bin/nodejs
+
+
+FROM builder AS dev
+
+#RUN curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+WORKDIR /app
+
+ENV PATH="$(go env GOPATH)/bin:${PATH}"
+
+RUN go install github.com/air-verse/air@latest
+
+RUN echo $PATH
+
+RUN ls .
+
+CMD ["air"]
