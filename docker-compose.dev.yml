@@ -1,0 +1,55 @@
+services:
+#  app:
+#    container_name: gms-dev
+#    build:
+#      context: .
+#      dockerfile: DOCKERFILE.dev
+#    environment:
+#      - PUID=1000
+#      - GUID=1000
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      - db
+#    volumes:
+#      - .:/app
+#    networks:
+#      - dev-network
+
+  db:
+    container_name: postgres-db
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dev_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: alex@hl4b.ch
+      PGADMIN_DEFAULT_PASSWORD: 1337@localhost
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - dev-network
+
+
+volumes:
+  pgdata:
+  pgadmin_data:
+
+networks:
+  dev-network:
+    driver: bridge   

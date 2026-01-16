@@ -66,9 +66,10 @@ func (a *AdminLayout) GetAdminHeader() gomponents.Node {
 						if button.Primary {
 							btnClass = "btn btn-sm btn-primary"
 						}
-						return html.A(
+						return html.Button(
 							html.Class(btnClass),
-							html.Href(button.Link),
+							htmx.Get(button.Link),
+							htmx.Target("#modal-container"),
 							gomponents.If(button.Icon != "",
 								html.I(html.Class(button.Icon+" mr-1")),
 							),

@@ -5,6 +5,7 @@ import (
 
 	"github.com/invertedbit/gms/database"
 	"github.com/invertedbit/gms/handlers"
+	"github.com/invertedbit/gms/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -28,7 +29,8 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	// db.AutoMigrate(&models.Recipe{}, &models.InstructionStep{}, &models.Ingredient{}, &models.RecipeIngredient{})
+	// AutoMigrate for auth schema models
+	db.AutoMigrate(&models.Role{}, &models.User{})
 
 	database.DBConn = db
 
