@@ -27,9 +27,6 @@ func Modal(id string, title string, content gomponents.Node) gomponents.Node {
 			html.Class("modal-backdrop"),
 			html.Button(
 				html.Type("button"),
-				htmx.Get(""),
-				htmx.Target("#modal-container"),
-				htmx.Swap("innerHTML"),
 			),
 		),
 	)
