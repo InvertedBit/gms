@@ -11,6 +11,7 @@ import (
 
 func UserListPage(userTableData *components.TableData) gomponents.Node {
 	return html.Div(
+		html.ID("users-list"),
 		components.ModalContainer(false),
 		components.DataTable(userTableData),
 	)
@@ -140,9 +141,8 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 				html.Button(
 					html.Type("button"),
 					html.Class("btn"),
-					htmx.Get(""),
-					htmx.Target("#modal-container"),
-					htmx.Swap("innerHTML"),
+					htmx.Get("/admin/users"),
+					htmx.Target("#users-list"),
 					gomponents.Text("Cancel"),
 				),
 			),

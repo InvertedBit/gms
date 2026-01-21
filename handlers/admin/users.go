@@ -13,6 +13,7 @@ import (
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
+	"github.com/stackus/hxgo/hxfiber"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -26,6 +27,12 @@ func HandleUserList(c *fiber.Ctx) error {
 
 	// Add action button
 	adminLayoutModel.AddActionButton("Add user", "/admin/users/new", "ri-add-line", true)
+
+	if hxfiber.IsHtmx(c) {
+		if hxfiber.GetTarget(c) == "#users-list" {
+			adminLayoutModel.LayoutType = viewmodels.LayoutPartialOnly
+		}
+	}
 
 	userTableData := buildUserTableData()
 

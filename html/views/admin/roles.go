@@ -10,6 +10,7 @@ import (
 
 func RoleListPage(roleTableData *components.TableData) gomponents.Node {
 	return html.Div(
+		html.ID("roles-list"),
 		components.ModalContainer(false),
 		components.DataTable(roleTableData),
 	)
@@ -121,9 +122,8 @@ func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
 				html.Button(
 					html.Type("button"),
 					html.Class("btn"),
-					htmx.Get(""),
-					htmx.Target("#modal-container"),
-					htmx.Swap("innerHTML"),
+					htmx.Get("/admin/roles"),
+					htmx.Target("#roles-list"),
 					gomponents.Text("Cancel"),
 				),
 			),

@@ -11,6 +11,7 @@ import (
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
+	"github.com/stackus/hxgo/hxfiber"
 	"gorm.io/gorm"
 )
 
@@ -23,6 +24,12 @@ func HandleRoleList(c *fiber.Ctx) error {
 
 	// Add action button
 	adminLayoutModel.AddActionButton("Add role", "/admin/roles/new", "ri-add-line", true)
+
+	if hxfiber.IsHtmx(c) {
+		if hxfiber.GetTarget(c) == "#roles-list" {
+			adminLayoutModel.LayoutType = viewmodels.LayoutPartialOnly
+		}
+	}
 
 	roleTableData := buildRoleTableData()
 
