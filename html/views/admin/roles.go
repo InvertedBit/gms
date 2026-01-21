@@ -2,31 +2,30 @@ package adminviews
 
 import (
 	"github.com/invertedbit/gms/html/components"
-	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
 	"maragu.dev/gomponents"
 	htmx "maragu.dev/gomponents-htmx"
 	"maragu.dev/gomponents/html"
 )
 
-func UserListPage(userTableData *components.TableData) gomponents.Node {
+func RoleListPage(roleTableData *components.TableData) gomponents.Node {
 	return html.Div(
-		html.ID("users-list"),
+		html.ID("roles-list"),
 		components.ModalContainer(false),
-		components.DataTable(userTableData),
+		components.DataTable(roleTableData),
 	)
 }
 
-func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
+func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
 	if vm == nil {
 		return gomponents.Text("Error: ViewModel is nil")
 	}
-	title := "Create User"
+	title := "Create Role"
 	if vm.IsEdit {
-		title = "Edit User"
+		title = "Edit Role"
 	}
 
-	return components.Modal("user-form-modal", title,
+	return components.Modal("role-form-modal", title,
 		html.Form(
 			html.Action(vm.SubmitURL),
 			gomponents.If(vm.IsEdit,
@@ -39,94 +38,76 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 			htmx.Swap("outerHTML"),
 			html.Class("space-y-4"),
 
-			// Email field
+			// Name field
 			html.Div(
 				html.Class("form-control"),
 				html.Label(
 					html.Class("label"),
 					html.Span(
 						html.Class("label-text"),
-						gomponents.Text("Email"),
+						gomponents.Text("Name"),
 					),
 				),
 				html.Input(
-					html.Type("email"),
-					html.Name("email"),
+					html.Type("text"),
+					html.Name("name"),
 					html.Class("input input-bordered"),
 					html.Required(),
-					html.Value(vm.GetUserEmail()),
+					html.Value(vm.GetRoleName()),
 				),
-				gomponents.If(vm.GetFormError("email") != "",
+				gomponents.If(vm.GetFormError("name") != "",
 					html.Label(
 						html.Class("label"),
 						html.Span(
 							html.Class("label-text-alt text-error"),
-							gomponents.Text(vm.GetFormError("email")),
+							gomponents.Text(vm.GetFormError("name")),
 						),
 					),
 				),
 			),
 
-			// Password field
+			// Slug field
 			html.Div(
 				html.Class("form-control"),
 				html.Label(
 					html.Class("label"),
 					html.Span(
 						html.Class("label-text"),
-						gomponents.If(vm.IsEdit,
-							gomponents.Text("Password (leave blank to keep current)"),
-						),
-						gomponents.If(!vm.IsEdit,
-							gomponents.Text("Password"),
-						),
+						gomponents.Text("Slug"),
 					),
 				),
 				html.Input(
-					html.Type("password"),
-					html.Name("password"),
+					html.Type("text"),
+					html.Name("slug"),
 					html.Class("input input-bordered"),
-					gomponents.If(!vm.IsEdit,
-						html.Required(),
-					),
+					html.Required(),
+					html.Value(vm.GetRoleSlug()),
 				),
-				gomponents.If(vm.GetFormError("password") != "",
+				gomponents.If(vm.GetFormError("slug") != "",
 					html.Label(
 						html.Class("label"),
 						html.Span(
 							html.Class("label-text-alt text-error"),
-							gomponents.Text(vm.GetFormError("password")),
+							gomponents.Text(vm.GetFormError("slug")),
 						),
 					),
 				),
 			),
 
-			// Role field
+			// Description field
 			html.Div(
 				html.Class("form-control"),
 				html.Label(
 					html.Class("label"),
 					html.Span(
 						html.Class("label-text"),
-						gomponents.Text("Role"),
+						gomponents.Text("Description"),
 					),
 				),
-				html.Select(
-					html.Name("role_slug"),
-					html.Class("select select-bordered"),
-					html.Option(
-						html.Value(""),
-						gomponents.Text("Select a role"),
-					),
-					gomponents.Map(vm.Roles, func(role models.Role) gomponents.Node {
-						return html.Option(
-							html.Value(role.Slug),
-							gomponents.If(vm.GetUserRoleSlug() == role.Slug,
-								html.Selected(),
-							),
-							gomponents.Text(role.Name),
-						)
-					}),
+				html.Textarea(
+					html.Name("description"),
+					html.Class("textarea textarea-bordered"),
+					gomponents.Text(vm.GetRoleDescription()),
 				),
 			),
 
@@ -141,8 +122,8 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 				html.Button(
 					html.Type("button"),
 					html.Class("btn"),
-					htmx.Get("/admin/users"),
-					htmx.Target("#users-list"),
+					htmx.Get("/admin/roles"),
+					htmx.Target("#roles-list"),
 					gomponents.Text("Cancel"),
 				),
 			),

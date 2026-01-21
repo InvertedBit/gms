@@ -1,11 +1,21 @@
 package adminhandlers
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
 	"github.com/invertedbit/gms/html/components"
 	adminviews "github.com/invertedbit/gms/html/views/admin"
+	"github.com/invertedbit/gms/models"
+	"github.com/invertedbit/gms/viewmodels"
+	"github.com/stackus/hxgo/hxfiber"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func HandleUserList(c *fiber.Ctx) error {
@@ -15,22 +25,16 @@ func HandleUserList(c *fiber.Ctx) error {
 	adminLayoutModel.AddBreadcrumb("Admin", "/admin")
 	adminLayoutModel.AddBreadcrumb("Users", "")
 
-	// Add example action button
+	// Add action button
 	adminLayoutModel.AddActionButton("Add user", "/admin/users/new", "ri-add-line", true)
 
-	userTableData := &components.TableData{
-		Columns: []components.TableColumn{
-			{Name: "id", Label: "ID"},
-			{Name: "username", Label: "Username"},
-			{Name: "email", Label: "Email"},
-			{Name: "role", Label: "Role"},
-		},
-		Rows: []components.TableRow{
-			{Values: map[string]string{"id": "1", "username": "admin", "email": "admin@admin.com", "role": "admin"}},
-			{Values: map[string]string{"id": "1", "username": "admin", "email": "admin@admin.com", "role": "admin"}},
-			{Values: map[string]string{"id": "1", "username": "admin", "email": "admin@admin.com", "role": "admin"}},
-		},
+	if hxfiber.IsHtmx(c) {
+		if hxfiber.GetTarget(c) == "#users-list" {
+			adminLayoutModel.LayoutType = viewmodels.LayoutPartialOnly
+		}
 	}
+
+	userTableData := buildUserTableData()
 
 	userListPage := html.AdminPage{
 		Title:                "Users - GMS",
@@ -39,4 +43,177 @@ func HandleUserList(c *fiber.Ctx) error {
 	}
 
 	return handlerutils.ReturnHandler(c, userListPage)
+}
+
+func HandleUserNew(c *fiber.Ctx) error {
+	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return c.Status(500).SendString("Error fetching roles")
+	}
+
+	vm := viewmodels.NewUserFormViewModel(nil, roles, false)
+	return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
+}
+
+func HandleUserEdit(c *fiber.Ctx) error {
+	fmt.Println("HandleUserEdit called")
+	userID := c.Params("id")
+	fmt.Printf("Got user id: %s\n", userID)
+	user, err := gorm.G[models.User](database.DBConn).Where("id = ?", userID).First(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return c.Status(404).SendString("User not found")
+	}
+
+	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return c.Status(500).SendString("Error fetching roles")
+	}
+
+	vm := viewmodels.NewUserFormViewModel(&user, roles, true)
+	return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
+}
+
+func HandleUserCreate(c *fiber.Ctx) error {
+	email := c.FormValue("email")
+	password := c.FormValue("password")
+	roleSlug := c.FormValue("role_slug")
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.Status(500).SendString("Error hashing password")
+	}
+
+	user := models.User{
+		Model: models.Model{
+			ID: uuid.New(),
+		},
+		Email:             email,
+		EncryptedPassword: string(hashedPassword),
+	}
+
+	if roleSlug != "" {
+		user.RoleSlug = roleSlug
+	}
+
+	if err := database.DBConn.Create(&user).Error; err != nil {
+		// Check for unique constraint violation
+		if isDuplicateKeyError(err) {
+			c.Status(400)
+			var roles []models.Role
+			database.DBConn.Order("name ASC").Find(&roles)
+			vm := viewmodels.NewUserFormViewModel(&user, roles, false)
+			vm.FormErrors["email"] = "A user with this email already exists"
+			return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
+		}
+		return c.Status(500).SendString("Error creating user")
+	}
+
+	// Return updated table
+	return renderUserTable(c)
+}
+
+func HandleUserUpdate(c *fiber.Ctx) error {
+	userID := c.Params("id")
+
+	var user models.User
+	if err := database.DBConn.Where("id = ?", userID).First(&user).Error; err != nil {
+		return c.Status(404).SendString("User not found")
+	}
+
+	user.Email = c.FormValue("email")
+
+	// Only update password if provided
+	password := c.FormValue("password")
+	if password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			return c.Status(500).SendString("Error hashing password")
+		}
+		user.EncryptedPassword = string(hashedPassword)
+	}
+
+	roleSlug := c.FormValue("role_slug")
+	if roleSlug != "" {
+		user.RoleSlug = roleSlug
+	} else {
+		user.RoleSlug = ""
+	}
+
+	if err := database.DBConn.Save(&user).Error; err != nil {
+		// Check for unique constraint violation
+		if isDuplicateKeyError(err) {
+			c.Status(400)
+			var roles []models.Role
+			database.DBConn.Order("name ASC").Find(&roles)
+			vm := viewmodels.NewUserFormViewModel(&user, roles, true)
+			vm.FormErrors["email"] = "A user with this email already exists"
+			return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
+		}
+		return c.Status(500).SendString("Error updating user")
+	}
+
+	// Return updated table
+	return renderUserTable(c)
+}
+
+func HandleUserDelete(c *fiber.Ctx) error {
+	userID := c.Params("id")
+
+	if err := database.DBConn.Delete(&models.User{}, "id = ?", userID).Error; err != nil {
+		return c.Status(400).SendString("Error deleting user")
+	}
+
+	// Return updated table
+	return renderUserTable(c)
+}
+
+func renderUserTable(c *fiber.Ctx) error {
+	userTableData := buildUserTableData()
+	return handlerutils.RenderNode(c, components.DataTable(userTableData))
+}
+
+// buildUserTableData fetches users from database and builds table data
+func buildUserTableData() *components.TableData {
+	// Fetch users from database
+	var users []models.User
+	database.DBConn.Preload("Role").Order("email ASC").Find(&users)
+
+	// Build table data
+	userTableData := &components.TableData{
+		Columns: []components.TableColumn{
+			{Name: "email", Label: "Email"},
+			{Name: "role", Label: "Role"},
+		},
+		Rows:             []components.TableRow{},
+		Editable:         true,
+		Deletable:        true,
+		EditRoute:        "/admin/users/edit",
+		DeleteRoute:      "/admin/users",
+		IDField:          "id",
+		RefreshTarget:    "#data-table-container",
+		DeleteConfirmMsg: "Are you sure you want to delete this user? This action cannot be undone.",
+	}
+
+	for _, user := range users {
+		roleName := ""
+		if user.RoleSlug != "" {
+			role, err := gorm.G[models.Role](database.DBConn).Where("slug = ?", user.RoleSlug).First(context.Background())
+			if err == nil {
+				roleName = role.Name
+			}
+		}
+		userTableData.Rows = append(userTableData.Rows, components.TableRow{
+			Values: map[string]string{
+				"id":    user.ID.String(),
+				"email": user.Email,
+				"role":  roleName,
+			},
+		})
+	}
+
+	return userTableData
 }

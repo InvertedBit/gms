@@ -49,9 +49,9 @@ func GetUserFromUUID(uuid string) (models.User, error) {
 
 func UserWithoutPassword(user *models.User) models.User {
 	returnUser := models.User{
-		Model: user.Model,
-		Email: user.Email,
-		Role:  user.Role,
+		Model:    user.Model,
+		Email:    user.Email,
+		RoleSlug: user.RoleSlug,
 	}
 	return returnUser
 }

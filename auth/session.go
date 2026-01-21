@@ -30,3 +30,11 @@ func RemoveCachedUser(userID string) {
 		delete(UserCache, userID)
 	}
 }
+
+func HasCachedUserRole(userID string, roleSlug string) bool {
+	user, exists := GetCachedUser(userID)
+	if !exists {
+		return false
+	}
+	return user.RoleSlug == roleSlug
+}
