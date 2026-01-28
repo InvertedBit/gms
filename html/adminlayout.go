@@ -95,7 +95,7 @@ func (a *AdminLayout) GetAdminNavigation() gomponents.Node {
 				gomponents.Text("GMS Admin"),
 			),
 			html.Ul(
-				html.Class("menu"),
+				html.Class("menu w-full"),
 				gomponents.Map(a.AdminLayoutViewModel.GetNavigation(), func(item *viewmodels.AdminNavigationItem) gomponents.Node {
 					return a.renderNavigationItem(item)
 				}),

@@ -11,6 +11,10 @@ func RegisterBackendRoutes(router fiber.Router) error {
 	router.Get("/dashboard", HandleBackendDashboard)
 
 	router.Get("/pages", HandlePageList)
+	router.Get("/pages/new", HandlePageNew)
+	router.Post("/pages", HandlePageCreate)
+
+	router.Get("/instances", HandleInstanceList)
 
 	// User routes
 	router.Get("/users", HandleUserList)
