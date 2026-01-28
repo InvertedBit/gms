@@ -7,7 +7,7 @@ import (
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
-	"github.com/invertedbit/gms/html/components"
+	admincomponents "github.com/invertedbit/gms/html/components/admin"
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
@@ -125,25 +125,25 @@ func HandleRoleDelete(c *fiber.Ctx) error {
 
 func renderRoleTable(c *fiber.Ctx) error {
 	roleTableData := buildRoleTableData()
-	handlerutils.RenderNode(c, components.ModalContainer(true))
-	return handlerutils.RenderNode(c, components.DataTable(roleTableData))
+	handlerutils.RenderNode(c, admincomponents.ModalContainer(true))
+	return handlerutils.RenderNode(c, admincomponents.DataTable(roleTableData))
 }
 
 // buildRoleTableData fetches roles from database and builds table data
-func buildRoleTableData() *components.TableData {
+func buildRoleTableData() *admincomponents.TableData {
 	// Fetch roles from database
 	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
 	if err != nil {
-		return &components.TableData{}
+		return &admincomponents.TableData{}
 	}
 
 	// Build table data
-	roleTableData := &components.TableData{
-		Columns: []components.TableColumn{
+	roleTableData := &admincomponents.TableData{
+		Columns: []admincomponents.TableColumn{
 			{Name: "name", Label: "Name"},
 			{Name: "description", Label: "Description"},
 		},
-		Rows:             []components.TableRow{},
+		Rows:             []admincomponents.TableRow{},
 		Editable:         true,
 		Deletable:        true,
 		EditRoute:        "/admin/roles",
@@ -154,7 +154,7 @@ func buildRoleTableData() *components.TableData {
 	}
 
 	for _, role := range roles {
-		roleTableData.Rows = append(roleTableData.Rows, components.TableRow{
+		roleTableData.Rows = append(roleTableData.Rows, admincomponents.TableRow{
 			Values: map[string]string{
 				"id":          role.ID.String(),
 				"name":        role.Name,

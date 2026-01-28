@@ -9,7 +9,7 @@ import (
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
-	"github.com/invertedbit/gms/html/components"
+	admincomponents "github.com/invertedbit/gms/html/components/admin"
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
@@ -173,22 +173,22 @@ func HandleUserDelete(c *fiber.Ctx) error {
 
 func renderUserTable(c *fiber.Ctx) error {
 	userTableData := buildUserTableData()
-	return handlerutils.RenderNode(c, components.DataTable(userTableData))
+	return handlerutils.RenderNode(c, admincomponents.DataTable(userTableData))
 }
 
 // buildUserTableData fetches users from database and builds table data
-func buildUserTableData() *components.TableData {
+func buildUserTableData() *admincomponents.TableData {
 	// Fetch users from database
 	var users []models.User
 	database.DBConn.Preload("Role").Order("email ASC").Find(&users)
 
 	// Build table data
-	userTableData := &components.TableData{
-		Columns: []components.TableColumn{
+	userTableData := &admincomponents.TableData{
+		Columns: []admincomponents.TableColumn{
 			{Name: "email", Label: "Email"},
 			{Name: "role", Label: "Role"},
 		},
-		Rows:             []components.TableRow{},
+		Rows:             []admincomponents.TableRow{},
 		Editable:         true,
 		Deletable:        true,
 		EditRoute:        "/admin/users/edit",
@@ -206,7 +206,7 @@ func buildUserTableData() *components.TableData {
 				roleName = role.Name
 			}
 		}
-		userTableData.Rows = append(userTableData.Rows, components.TableRow{
+		userTableData.Rows = append(userTableData.Rows, admincomponents.TableRow{
 			Values: map[string]string{
 				"id":    user.ID.String(),
 				"email": user.Email,

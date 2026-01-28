@@ -1,4 +1,4 @@
-package components
+package admincomponents
 
 import (
 	"maragu.dev/gomponents"

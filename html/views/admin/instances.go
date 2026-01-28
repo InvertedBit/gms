@@ -8,24 +8,24 @@ import (
 	"maragu.dev/gomponents/html"
 )
 
-func RoleListPage(roleTableData *admincomponents.TableData) gomponents.Node {
+func InstanceListPage(instanceTableData *admincomponents.TableData) gomponents.Node {
 	return html.Div(
-		html.ID("roles-list"),
+		html.ID("instances-list"),
 		admincomponents.ModalContainer(false),
-		admincomponents.DataTable(roleTableData),
+		admincomponents.DataTable(instanceTableData),
 	)
 }
 
-func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
+func InstanceFormModal(vm *viewmodels.InstanceFormViewModel) gomponents.Node {
 	if vm == nil {
 		return gomponents.Text("Error: ViewModel is nil")
 	}
-	title := "Create Role"
+	title := "Create Instance"
 	if vm.IsEdit {
-		title = "Edit Role"
+		title = "Edit Instance"
 	}
 
-	return admincomponents.Modal("role-form-modal", title,
+	return admincomponents.Modal("instance-form-modal", title,
 		html.Form(
 			html.Action(vm.SubmitURL),
 			gomponents.If(vm.IsEdit,
@@ -53,13 +53,13 @@ func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
 					html.Name("name"),
 					html.Class("input input-bordered"),
 					html.Required(),
-					html.Value(vm.GetRoleName()),
+					html.Value(vm.GetInstanceName()),
 				),
 				gomponents.If(vm.GetFormError("name") != "",
 					html.Label(
 						html.Class("label"),
 						html.Span(
-							html.Class("label-text-alt text-error"),
+							html.Class("label-text text-error"),
 							gomponents.Text(vm.GetFormError("name")),
 						),
 					),
@@ -81,50 +81,16 @@ func RoleFormModal(vm *viewmodels.RoleFormViewModel) gomponents.Node {
 					html.Name("slug"),
 					html.Class("input input-bordered"),
 					html.Required(),
-					html.Value(vm.GetRoleSlug()),
+					html.Value(vm.GetInstanceSlug()),
 				),
 				gomponents.If(vm.GetFormError("slug") != "",
 					html.Label(
 						html.Class("label"),
 						html.Span(
-							html.Class("label-text-alt text-error"),
+							html.Class("label-text text-error"),
 							gomponents.Text(vm.GetFormError("slug")),
 						),
 					),
-				),
-			),
-
-			// Description field
-			html.Div(
-				html.Class("form-control"),
-				html.Label(
-					html.Class("label"),
-					html.Span(
-						html.Class("label-text"),
-						gomponents.Text("Description"),
-					),
-				),
-				html.Textarea(
-					html.Name("description"),
-					html.Class("textarea textarea-bordered"),
-					gomponents.Text(vm.GetRoleDescription()),
-				),
-			),
-
-			// Action buttons
-			html.Div(
-				html.Class("modal-action"),
-				html.Button(
-					html.Type("submit"),
-					html.Class("btn btn-primary"),
-					gomponents.Text("Save"),
-				),
-				html.Button(
-					html.Type("button"),
-					html.Class("btn"),
-					htmx.Get("/admin/roles"),
-					htmx.Target("#roles-list"),
-					gomponents.Text("Cancel"),
 				),
 			),
 		),

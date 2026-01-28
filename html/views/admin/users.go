@@ -1,7 +1,7 @@
 package adminviews
 
 import (
-	"github.com/invertedbit/gms/html/components"
+	admincomponents "github.com/invertedbit/gms/html/components/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
 	"maragu.dev/gomponents"
@@ -9,11 +9,11 @@ import (
 	"maragu.dev/gomponents/html"
 )
 
-func UserListPage(userTableData *components.TableData) gomponents.Node {
+func UserListPage(userTableData *admincomponents.TableData) gomponents.Node {
 	return html.Div(
 		html.ID("users-list"),
-		components.ModalContainer(false),
-		components.DataTable(userTableData),
+		admincomponents.ModalContainer(false),
+		admincomponents.DataTable(userTableData),
 	)
 }
 
@@ -26,7 +26,7 @@ func UserFormModal(vm *viewmodels.UserFormViewModel) gomponents.Node {
 		title = "Edit User"
 	}
 
-	return components.Modal("user-form-modal", title,
+	return admincomponents.Modal("user-form-modal", title,
 		html.Form(
 			html.Action(vm.SubmitURL),
 			gomponents.If(vm.IsEdit,

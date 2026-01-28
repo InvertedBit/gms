@@ -28,6 +28,16 @@ func GetDefaultAdminNavigation() []*viewmodels.AdminNavigationItem {
 					Icon:  "ri-restaurant-line",
 				},
 				{
+					Label: "Layouts",
+					Link:  "/admin/layouts",
+					Icon:  "ri-layout-line",
+				},
+				{
+					Label: "Instances",
+					Link:  "/admin/instances",
+					Icon:  "ri-puzzle-line",
+				},
+				{
 					Label: "Posts",
 					Link:  "/admin/posts",
 					Icon:  "ri-plant-line",
