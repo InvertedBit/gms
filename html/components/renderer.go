@@ -1,16 +1,22 @@
 package components
 
 import (
+	"os"
+	"plugin"
+
 	"github.com/invertedbit/gms/viewmodels"
 	"maragu.dev/gomponents"
 	"maragu.dev/gomponents/html"
 )
 
+var ComponentRenderer *Renderer
+
 type RenderFunc func(*viewmodels.ComponentViewModel) gomponents.Node
 
 type Component struct {
-	Name   string
-	Render RenderFunc
+	Name        string
+	Description string
+	Render      RenderFunc
 }
 
 type Renderer struct {
@@ -19,7 +25,53 @@ type Renderer struct {
 
 func NewRenderer() *Renderer {
 	return &Renderer{
-		Components: map[string]Component{},
+		Components: map[string]Component{
+			"container": {
+				Name:        "Container",
+				Description: "A basic container (div) component",
+				Render:      RenderContainerComponent,
+			},
+			// Add more components here as needed
+		},
+	}
+}
+
+func (r *Renderer) TryLoadPlugins(pluginDir string) error {
+	// Get file list in pluginDir
+	fileList, err := os.ReadDir(pluginDir)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range fileList {
+		if file.IsDir() {
+			continue
+		}
+		plugin, err := plugin.Open(pluginDir + file.Name())
+		if err != nil {
+			return err
+		}
+		getComponentsSymbol, err := plugin.Lookup("GetComponents")
+		if err != nil {
+			return err
+		}
+		getComponentsFunc := getComponentsSymbol.(func() map[string]Component)
+		components := getComponentsFunc()
+		for name, component := range components {
+			if _, exists := r.Components[name]; exists {
+				continue // Skip if component with same name already exists
+			}
+			r.Components[name] = component
+		}
+	}
+	// For each file, attempt to load as plugin
+	// If plugin has a Component, register it in r.Components
+	return nil
+}
+
+func (r *Renderer) PrintLoadedComponents() {
+	for name, component := range r.Components {
+		println("Loaded component:", name, "-", component.Name)
 	}
 }
 

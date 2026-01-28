@@ -5,6 +5,7 @@ import (
 
 	"github.com/invertedbit/gms/database"
 	"github.com/invertedbit/gms/handlers"
+	"github.com/invertedbit/gms/html/components"
 	"github.com/invertedbit/gms/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -33,6 +34,17 @@ func main() {
 	db.AutoMigrate(&models.Role{}, &models.User{}, &models.Media{}, &models.ComponentInstance{}, &models.ComponentProperty{}, &models.ComponentMedia{}, &models.Layout{}, &models.Page{})
 
 	database.DBConn = db
+
+	componentRenderer := components.NewRenderer()
+
+	loadErr := componentRenderer.TryLoadPlugins("./plugins/")
+	if loadErr != nil {
+		panic(loadErr)
+	}
+
+	componentRenderer.PrintLoadedComponents()
+
+	components.ComponentRenderer = componentRenderer
 
 	app := handlers.New()
 

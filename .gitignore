@@ -5,3 +5,4 @@ assets/css/theme.css
 assets/js/main.wasm
 gms-data.sqlite3
 gms
+plugins/*
