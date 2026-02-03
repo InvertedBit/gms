@@ -1,12 +1,9 @@
 package auth
 
 import (
-	"context"
-
 	"github.com/invertedbit/gms/database"
 	"github.com/invertedbit/gms/models"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 func HashPassword(password string) (string, error) {
@@ -22,8 +19,8 @@ func VerifyPassword(hashedPassword, password string) error {
 }
 
 func AuthenticateUser(email, password string) (models.User, error) {
-	user, err := gorm.G[models.User](database.DBConn).Where("email = ?", email).First(context.Background())
-	if err != nil {
+	var user models.User
+	if err := database.DBConn.Where("email = ?", email).First(&user).Error; err != nil {
 		return models.User{}, err
 	}
 
@@ -40,8 +37,8 @@ func GetUserFromUUID(uuid string) (models.User, error) {
 		return *cachedUser, nil
 	}
 
-	user, err := gorm.G[models.User](database.DBConn).Where("id = ?", uuid).First(context.Background())
-	if err != nil {
+	var user models.User
+	if err := database.DBConn.Where("id = ?", uuid).First(&user).Error; err != nil {
 		return models.User{}, err
 	}
 	return UserWithoutPassword(&user), nil

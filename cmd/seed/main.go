@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -89,9 +88,9 @@ func main() {
 	}
 
 	// Check if admin user already exists
-	existingAdminUser, err := gorm.G[models.User](db).Where("email = ?", adminUser.Email).First(context.Background())
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		if err := gorm.G[models.User](db).Create(context.Background(), &adminUser); err != nil {
+	var existingAdminUser models.User
+	if err := db.Where("email = ?", adminUser.Email).First(&existingAdminUser).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		if err := db.Create(&adminUser).Error; err != nil {
 			fmt.Printf("Error creating admin user: %v\n", err)
 		} else {
 			fmt.Printf("Created admin user with email '%s'\n", adminUser.Email)

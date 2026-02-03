@@ -1,8 +1,6 @@
 package adminhandlers
 
 import (
-	"context"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
@@ -11,7 +9,6 @@ import (
 	adminviews "github.com/invertedbit/gms/html/views/admin"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -38,8 +35,8 @@ func HandlePageList(c *fiber.Ctx) error {
 }
 
 func HandlePageNew(c *fiber.Ctx) error {
-	layouts, err := gorm.G[models.Layout](database.DBConn).Where("entry_type = ?", models.EntryTypeActive).Order("name ASC").Find(context.Background())
-	if err != nil {
+	var layouts []models.Layout
+	if err := database.DBConn.Where("entry_type = ?", models.EntryTypeActive).Order("name ASC").Find(&layouts).Error; err != nil {
 		return c.Status(500).SendString("Error fetching layouts")
 	}
 
@@ -65,8 +62,8 @@ func HandlePageCreate(c *fiber.Ctx) error {
 	}
 
 	if layoutSlug != "" {
-		layout, err := gorm.G[models.Layout](database.DBConn).Where("slug = ?", layoutSlug).First(context.Background())
-		if err != nil {
+		var layout models.Layout
+		if err := database.DBConn.Where("slug = ?", layoutSlug).First(&layout).Error; err == nil {
 			layoutData = &layout
 		}
 	}
@@ -79,8 +76,7 @@ func HandlePageCreate(c *fiber.Ctx) error {
 		page.LayoutSlug = &layoutData.Slug
 	}
 
-	err := gorm.G[models.Page](database.DBConn).Create(context.Background(), page)
-	if err != nil {
+	if err := database.DBConn.Create(page).Error; err != nil {
 		return c.Status(500).SendString("Error creating page: " + err.Error())
 	}
 
@@ -93,8 +89,8 @@ func renderPageTable(c *fiber.Ctx) error {
 }
 
 func buildPageTableData() *admincomponents.TableData {
-	pages, err := gorm.G[models.Page](database.DBConn).Joins(clause.LeftJoin.Association("ComponentInstance"), nil).Order("title ASC").Find(context.Background())
-	if err != nil {
+	var pages []models.Page
+	if err := database.DBConn.Joins("ComponentInstance").Order("title ASC").Find(&pages).Error; err != nil {
 		return &admincomponents.TableData{}
 	}
 

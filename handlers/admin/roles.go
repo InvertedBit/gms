@@ -1,8 +1,6 @@
 package adminhandlers
 
 import (
-	"context"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
@@ -12,7 +10,6 @@ import (
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
 	"github.com/stackus/hxgo/hxfiber"
-	"gorm.io/gorm"
 )
 
 func HandleRoleList(c *fiber.Ctx) error {
@@ -132,8 +129,8 @@ func renderRoleTable(c *fiber.Ctx) error {
 // buildRoleTableData fetches roles from database and builds table data
 func buildRoleTableData() *admincomponents.TableData {
 	// Fetch roles from database
-	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
-	if err != nil {
+	var roles []models.Role
+	if err := database.DBConn.Order("name ASC").Find(&roles).Error; err != nil {
 		return &admincomponents.TableData{}
 	}
 

@@ -1,7 +1,6 @@
 package adminhandlers
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,7 +14,6 @@ import (
 	"github.com/invertedbit/gms/viewmodels"
 	"github.com/stackus/hxgo/hxfiber"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 func HandleUserList(c *fiber.Ctx) error {
@@ -46,8 +44,8 @@ func HandleUserList(c *fiber.Ctx) error {
 }
 
 func HandleUserNew(c *fiber.Ctx) error {
-	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
-	if err != nil {
+	var roles []models.Role
+	if err := database.DBConn.Order("name ASC").Find(&roles).Error; err != nil {
 		fmt.Println(err)
 		return c.Status(500).SendString("Error fetching roles")
 	}
@@ -60,14 +58,14 @@ func HandleUserEdit(c *fiber.Ctx) error {
 	fmt.Println("HandleUserEdit called")
 	userID := c.Params("id")
 	fmt.Printf("Got user id: %s\n", userID)
-	user, err := gorm.G[models.User](database.DBConn).Where("id = ?", userID).First(context.Background())
-	if err != nil {
+	var user models.User
+	if err := database.DBConn.Where("id = ?", userID).First(&user).Error; err != nil {
 		fmt.Println(err)
 		return c.Status(404).SendString("User not found")
 	}
 
-	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
-	if err != nil {
+	var roles []models.Role
+	if err := database.DBConn.Order("name ASC").Find(&roles).Error; err != nil {
 		fmt.Println(err)
 		return c.Status(500).SendString("Error fetching roles")
 	}
@@ -201,8 +199,8 @@ func buildUserTableData() *admincomponents.TableData {
 	for _, user := range users {
 		roleName := ""
 		if user.RoleSlug != "" {
-			role, err := gorm.G[models.Role](database.DBConn).Where("slug = ?", user.RoleSlug).First(context.Background())
-			if err == nil {
+			var role models.Role
+			if err := database.DBConn.Where("slug = ?", user.RoleSlug).First(&role).Error; err == nil {
 				roleName = role.Name
 			}
 		}
