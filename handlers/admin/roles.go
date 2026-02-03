@@ -51,7 +51,7 @@ func HandleRoleEdit(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 
 	var role models.Role
-	if err := database.DBConn.Where("id = ?", roleID).First(&role).Error; err != nil {
+	if err := gorm.G[models.Role](database.DBConn).Where("id = ?", roleID).First(context.Background(), &role).Error; err != nil {
 		return c.Status(404).SendString("Role not found")
 	}
 
@@ -70,7 +70,7 @@ func HandleRoleCreate(c *fiber.Ctx) error {
 		Description: description,
 	}
 
-	if err := database.DBConn.Create(&role).Error; err != nil {
+	if err := gorm.G[models.Role](database.DBConn).Create(&role).Error; err != nil {
 		// Check for unique constraint violation
 		if isDuplicateKeyError(err) {
 			c.Status(400)
@@ -89,7 +89,7 @@ func HandleRoleUpdate(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 
 	var role models.Role
-	if err := database.DBConn.Where("id = ?", roleID).First(&role).Error; err != nil {
+	if err := gorm.G[models.Role](database.DBConn).Where("id = ?", roleID).First(context.Background(), &role).Error; err != nil {
 		return c.Status(404).SendString("Role not found")
 	}
 
@@ -97,7 +97,7 @@ func HandleRoleUpdate(c *fiber.Ctx) error {
 	role.Slug = c.FormValue("slug")
 	role.Description = c.FormValue("description")
 
-	if err := database.DBConn.Save(&role).Error; err != nil {
+	if err := gorm.G[models.Role](database.DBConn).Save(&role).Error; err != nil {
 		// Check for unique constraint violation
 		if isDuplicateKeyError(err) {
 			c.Status(400)
@@ -115,7 +115,7 @@ func HandleRoleUpdate(c *fiber.Ctx) error {
 func HandleRoleDelete(c *fiber.Ctx) error {
 	roleID := c.Params("id")
 
-	if err := database.DBConn.Delete(&models.Role{}, "id = ?", roleID).Error; err != nil {
+	if err := gorm.G[models.Role](database.DBConn).Delete(&models.Role{}, "id = ?", roleID).Error; err != nil {
 		return c.Status(400).SendString("Error deleting role")
 	}
 
