@@ -1,72 +1,39 @@
 package components
 
 import (
-	"os"
-	"plugin"
-
-	"github.com/invertedbit/gms/viewmodels"
+	"github.com/invertedbit/gms-plugins/components"
+	"github.com/invertedbit/gms-plugins/plugins"
 	"maragu.dev/gomponents"
 	"maragu.dev/gomponents/html"
 )
 
 var ComponentRenderer *Renderer
 
-type RenderFunc func(*viewmodels.ComponentViewModel) gomponents.Node
-
-type Component struct {
-	Name        string
-	Description string
-	Render      RenderFunc
-}
-
 type Renderer struct {
-	Components map[string]Component
+	Components map[string]components.Component
 }
 
 func NewRenderer() *Renderer {
 	return &Renderer{
-		Components: map[string]Component{
+		Components: map[string]components.Component{
 			"container": {
 				Name:        "Container",
 				Description: "A basic container (div) component",
 				Render:      RenderContainerComponent,
+				Children:    []components.Component{},
 			},
 			// Add more components here as needed
 		},
 	}
 }
 
-func (r *Renderer) TryLoadPlugins(pluginDir string) error {
-	// Get file list in pluginDir
-	fileList, err := os.ReadDir(pluginDir)
-	if err != nil {
-		return err
+func (r *Renderer) LoadComponentsFromPlugin(plugin plugins.Plugin) {
+	if plugin.Components == nil {
+		return
 	}
-
-	for _, file := range fileList {
-		if file.IsDir() {
-			continue
-		}
-		plugin, err := plugin.Open(pluginDir + file.Name())
-		if err != nil {
-			return err
-		}
-		getComponentsSymbol, err := plugin.Lookup("GetComponents")
-		if err != nil {
-			return err
-		}
-		getComponentsFunc := getComponentsSymbol.(func() map[string]Component)
-		components := getComponentsFunc()
-		for name, component := range components {
-			if _, exists := r.Components[name]; exists {
-				continue // Skip if component with same name already exists
-			}
-			r.Components[name] = component
-		}
+	for key, component := range plugin.Components {
+		r.Components[key] = component
 	}
-	// For each file, attempt to load as plugin
-	// If plugin has a Component, register it in r.Components
-	return nil
 }
 
 func (r *Renderer) PrintLoadedComponents() {
@@ -75,7 +42,7 @@ func (r *Renderer) PrintLoadedComponents() {
 	}
 }
 
-func (r *Renderer) RenderComponent(vm *viewmodels.ComponentViewModel) gomponents.Node {
+func (r *Renderer) RenderComponent(vm *components.ComponentViewModel) gomponents.Node {
 	if component, exists := r.Components[vm.Name]; exists {
 		return component.Render(vm)
 	} else {

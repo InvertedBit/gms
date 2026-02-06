@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	gcomponents "github.com/invertedbit/gms-plugins/components"
 	"github.com/invertedbit/gms/database"
 	"github.com/invertedbit/gms/handlers"
 	"github.com/invertedbit/gms/html/components"
@@ -35,7 +36,7 @@ func main() {
 
 	database.DBConn = db
 
-	componentRenderer := components.NewRenderer()
+	componentRenderer := gcomponents.NewRenderer()
 
 	loadErr := componentRenderer.TryLoadPlugins("./plugins/")
 	if loadErr != nil {

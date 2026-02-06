@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "wasm"
+		},
+		{
+			"path": "../gms-plugins"
 		}
 	],
 	"settings": {
