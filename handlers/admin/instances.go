@@ -1,7 +1,7 @@
 package adminhandlers
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
 	adminviews "github.com/invertedbit/gms/html/views/admin"
@@ -13,7 +13,7 @@ func addInstancesBreadcrumbs(adminLayoutModel *viewmodels.AdminLayoutViewModel) 
 	adminLayoutModel.AddBreadcrumb("Pages", "/admin/pages")
 }
 
-func HandleInstanceList(c *fiber.Ctx) error {
+func HandleInstanceList(c fiber.Ctx) error {
 	adminLayoutModel := GetAdminLayoutModel(c, "Instances")
 	addInstancesBreadcrumbs(adminLayoutModel)
 

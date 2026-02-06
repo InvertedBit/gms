@@ -4,20 +4,18 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/invertedbit/gms/auth"
+	"github.com/gofiber/fiber/v3"
 )
 
 func TestHandleLoginView_SessionCookieSet(t *testing.T) {
 	// Initialize session store
-	auth.SessionStore = *session.New()
 
 	// Create a test app
 	app := New()
 
 	// First request - should set session cookie
 	req := httptest.NewRequest("GET", "/auth/login", nil)
-	resp, err := app.Test(req, -1)
+	resp, err := app.Test(req, fiber.TestConfig{Timeout: 0, FailOnTimeout: false})
 	if err != nil {
 		t.Fatalf("Failed to send request: %v", err)
 	}
@@ -45,7 +43,7 @@ func TestHandleLoginView_SessionCookieSet(t *testing.T) {
 	for _, cookie := range cookies {
 		req2.AddCookie(cookie)
 	}
-	resp2, err := app.Test(req2, -1)
+	resp2, err := app.Test(req2, fiber.TestConfig{Timeout: 0, FailOnTimeout: false})
 	if err != nil {
 		t.Fatalf("Failed to send second request: %v", err)
 	}

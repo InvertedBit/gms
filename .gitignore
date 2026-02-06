@@ -6,3 +6,4 @@ assets/js/main.wasm
 gms-data.sqlite3
 gms
 plugins/*
+vendor/*

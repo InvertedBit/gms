@@ -3,19 +3,19 @@ package adminhandlers
 import (
 	"context"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
 	admincomponents "github.com/invertedbit/gms/html/components/admin"
 	adminviews "github.com/invertedbit/gms/html/views/admin"
+	"github.com/invertedbit/gms/htmx"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
-	"github.com/stackus/hxgo/hxfiber"
 	"gorm.io/gorm"
 )
 
-func HandleRoleList(c *fiber.Ctx) error {
+func HandleRoleList(c fiber.Ctx) error {
 	adminLayoutModel := GetAdminLayoutModel(c, "Roles")
 
 	// Add breadcrumbs
@@ -24,9 +24,11 @@ func HandleRoleList(c *fiber.Ctx) error {
 
 	// Add action button
 	adminLayoutModel.AddActionButton("Add role", "/admin/roles/new", "ri-add-line", true)
+	hxHeader := new(htmx.HXHeader)
+	c.Bind().Header(hxHeader)
 
-	if hxfiber.IsHtmx(c) {
-		if hxfiber.GetTarget(c) == "#roles-list" {
+	if hxHeader.IsHTMXRequest() {
+		if hxHeader.GetTarget() == "#roles-list" {
 			adminLayoutModel.LayoutType = viewmodels.LayoutPartialOnly
 		}
 	}
@@ -42,12 +44,12 @@ func HandleRoleList(c *fiber.Ctx) error {
 	return handlerutils.ReturnHandler(c, roleListPage)
 }
 
-func HandleRoleNew(c *fiber.Ctx) error {
+func HandleRoleNew(c fiber.Ctx) error {
 	vm := viewmodels.NewRoleFormViewModel(nil, false)
 	return handlerutils.RenderNode(c, adminviews.RoleFormModal(vm))
 }
 
-func HandleRoleEdit(c *fiber.Ctx) error {
+func HandleRoleEdit(c fiber.Ctx) error {
 	roleID := c.Params("id")
 
 	var role models.Role
@@ -59,7 +61,7 @@ func HandleRoleEdit(c *fiber.Ctx) error {
 	return handlerutils.RenderNode(c, adminviews.RoleFormModal(vm))
 }
 
-func HandleRoleCreate(c *fiber.Ctx) error {
+func HandleRoleCreate(c fiber.Ctx) error {
 	name := c.FormValue("name")
 	slug := c.FormValue("slug")
 	description := c.FormValue("description")
@@ -85,7 +87,7 @@ func HandleRoleCreate(c *fiber.Ctx) error {
 	return renderRoleTable(c)
 }
 
-func HandleRoleUpdate(c *fiber.Ctx) error {
+func HandleRoleUpdate(c fiber.Ctx) error {
 	roleID := c.Params("id")
 
 	var role models.Role
@@ -112,7 +114,7 @@ func HandleRoleUpdate(c *fiber.Ctx) error {
 	return renderRoleTable(c)
 }
 
-func HandleRoleDelete(c *fiber.Ctx) error {
+func HandleRoleDelete(c fiber.Ctx) error {
 	roleID := c.Params("id")
 
 	if err := database.DBConn.Delete(&models.Role{}, "id = ?", roleID).Error; err != nil {
@@ -123,7 +125,7 @@ func HandleRoleDelete(c *fiber.Ctx) error {
 	return renderRoleTable(c)
 }
 
-func renderRoleTable(c *fiber.Ctx) error {
+func renderRoleTable(c fiber.Ctx) error {
 	roleTableData := buildRoleTableData()
 	handlerutils.RenderNode(c, admincomponents.ModalContainer(true))
 	return handlerutils.RenderNode(c, admincomponents.DataTable(roleTableData))

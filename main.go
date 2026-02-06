@@ -3,10 +3,8 @@ package main
 import (
 	"os"
 
-	gcomponents "github.com/invertedbit/gms-plugins/components"
 	"github.com/invertedbit/gms/database"
 	"github.com/invertedbit/gms/handlers"
-	"github.com/invertedbit/gms/html/components"
 	"github.com/invertedbit/gms/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -36,16 +34,16 @@ func main() {
 
 	database.DBConn = db
 
-	componentRenderer := gcomponents.NewRenderer()
+	// componentRenderer := gcomponents.NewRenderer()
 
-	loadErr := componentRenderer.TryLoadPlugins("./plugins/")
-	if loadErr != nil {
-		panic(loadErr)
-	}
+	// loadErr := componentRenderer.TryLoadPlugins("./plugins/")
+	// if loadErr != nil {
+	// 	panic(loadErr)
+	// }
 
-	componentRenderer.PrintLoadedComponents()
+	// componentRenderer.PrintLoadedComponents()
 
-	components.ComponentRenderer = componentRenderer
+	// components.ComponentRenderer = componentRenderer
 
 	app := handlers.New()
 

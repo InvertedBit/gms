@@ -4,21 +4,21 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
 	admincomponents "github.com/invertedbit/gms/html/components/admin"
 	adminviews "github.com/invertedbit/gms/html/views/admin"
+	"github.com/invertedbit/gms/htmx"
 	"github.com/invertedbit/gms/models"
 	"github.com/invertedbit/gms/viewmodels"
-	"github.com/stackus/hxgo/hxfiber"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
-func HandleUserList(c *fiber.Ctx) error {
+func HandleUserList(c fiber.Ctx) error {
 	adminLayoutModel := GetAdminLayoutModel(c, "Users")
 
 	// Add breadcrumbs
@@ -28,8 +28,11 @@ func HandleUserList(c *fiber.Ctx) error {
 	// Add action button
 	adminLayoutModel.AddActionButton("Add user", "/admin/users/new", "ri-add-line", true)
 
-	if hxfiber.IsHtmx(c) {
-		if hxfiber.GetTarget(c) == "#users-list" {
+	hxHeader := new(htmx.HXHeader)
+	c.Bind().Header(hxHeader)
+
+	if hxHeader.IsHTMXRequest() {
+		if hxHeader.GetTarget() == "#users-list" {
 			adminLayoutModel.LayoutType = viewmodels.LayoutPartialOnly
 		}
 	}
@@ -45,7 +48,7 @@ func HandleUserList(c *fiber.Ctx) error {
 	return handlerutils.ReturnHandler(c, userListPage)
 }
 
-func HandleUserNew(c *fiber.Ctx) error {
+func HandleUserNew(c fiber.Ctx) error {
 	roles, err := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
 	if err != nil {
 		fmt.Println(err)
@@ -56,7 +59,7 @@ func HandleUserNew(c *fiber.Ctx) error {
 	return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
 }
 
-func HandleUserEdit(c *fiber.Ctx) error {
+func HandleUserEdit(c fiber.Ctx) error {
 	fmt.Println("HandleUserEdit called")
 	userID := c.Params("id")
 	fmt.Printf("Got user id: %s\n", userID)
@@ -76,7 +79,7 @@ func HandleUserEdit(c *fiber.Ctx) error {
 	return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
 }
 
-func HandleUserCreate(c *fiber.Ctx) error {
+func HandleUserCreate(c fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 	roleSlug := c.FormValue("role_slug")
@@ -116,7 +119,7 @@ func HandleUserCreate(c *fiber.Ctx) error {
 	return renderUserTable(c)
 }
 
-func HandleUserUpdate(c *fiber.Ctx) error {
+func HandleUserUpdate(c fiber.Ctx) error {
 	userID := c.Params("id")
 
 	var user models.User
@@ -160,7 +163,7 @@ func HandleUserUpdate(c *fiber.Ctx) error {
 	return renderUserTable(c)
 }
 
-func HandleUserDelete(c *fiber.Ctx) error {
+func HandleUserDelete(c fiber.Ctx) error {
 	userID := c.Params("id")
 
 	if err := database.DBConn.Delete(&models.User{}, "id = ?", userID).Error; err != nil {
@@ -171,7 +174,7 @@ func HandleUserDelete(c *fiber.Ctx) error {
 	return renderUserTable(c)
 }
 
-func renderUserTable(c *fiber.Ctx) error {
+func renderUserTable(c fiber.Ctx) error {
 	userTableData := buildUserTableData()
 	return handlerutils.RenderNode(c, admincomponents.DataTable(userTableData))
 }

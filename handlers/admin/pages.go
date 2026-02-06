@@ -3,7 +3,7 @@ package adminhandlers
 import (
 	"context"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/invertedbit/gms/database"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
@@ -20,7 +20,7 @@ func addPagesBreadcrumbs(adminLayoutModel *viewmodels.AdminLayoutViewModel) {
 	adminLayoutModel.AddBreadcrumb("Pages", "/admin/pages")
 }
 
-func HandlePageList(c *fiber.Ctx) error {
+func HandlePageList(c fiber.Ctx) error {
 	adminLayoutModel := GetAdminLayoutModel(c, "Pages")
 
 	addPagesBreadcrumbs(adminLayoutModel)
@@ -37,7 +37,7 @@ func HandlePageList(c *fiber.Ctx) error {
 	return handlerutils.ReturnHandler(c, pageListPage)
 }
 
-func HandlePageNew(c *fiber.Ctx) error {
+func HandlePageNew(c fiber.Ctx) error {
 	layouts, err := gorm.G[models.Layout](database.DBConn).Where("entry_type = ?", models.EntryTypeActive).Order("name ASC").Find(context.Background())
 	if err != nil {
 		return c.Status(500).SendString("Error fetching layouts")
@@ -48,7 +48,7 @@ func HandlePageNew(c *fiber.Ctx) error {
 	return handlerutils.RenderNode(c, adminviews.PageFormModal(vm))
 }
 
-func HandlePageCreate(c *fiber.Ctx) error {
+func HandlePageCreate(c fiber.Ctx) error {
 	title := c.FormValue("title")
 	slug := c.FormValue("slug")
 	layoutSlug := c.FormValue("layout")
@@ -87,7 +87,7 @@ func HandlePageCreate(c *fiber.Ctx) error {
 	return renderPageTable(c)
 }
 
-func renderPageTable(c *fiber.Ctx) error {
+func renderPageTable(c fiber.Ctx) error {
 	pageTableData := buildPageTableData()
 	return handlerutils.RenderNode(c, admincomponents.DataTable(pageTableData))
 }

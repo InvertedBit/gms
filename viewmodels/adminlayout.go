@@ -3,8 +3,8 @@ package viewmodels
 import (
 	"sort"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/stackus/hxgo/hxfiber"
+	"github.com/gofiber/fiber/v3"
+	"github.com/invertedbit/gms/htmx"
 )
 
 // AdminNavigationItem represents an item in the admin navigation menu
@@ -45,10 +45,12 @@ type AdminLayoutViewModel struct {
 }
 
 // NewAdminLayoutViewModel creates a new admin layout view model
-func NewAdminLayoutViewModel(page string, title string, c *fiber.Ctx) *AdminLayoutViewModel {
+func NewAdminLayoutViewModel(page string, title string, c fiber.Ctx) *AdminLayoutViewModel {
+	hxHeader := new(htmx.HXHeader)
+	c.Bind().Header(hxHeader)
 	layoutType := LayoutFull
-	hxTarget := hxfiber.GetTarget(c)
-	if hxfiber.IsBoosted(c) || hxfiber.IsHtmx(c) {
+	hxTarget := hxHeader.GetTarget()
+	if hxHeader.IsBoosted() || hxHeader.IsHTMXRequest() {
 		if hxTarget == "body" || hxTarget == "" {
 			layoutType = LayoutBodyOnly
 		} else {

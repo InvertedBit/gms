@@ -3,7 +3,7 @@ package adminhandlers
 import (
 	"fmt"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/invertedbit/gms/auth"
 	"github.com/invertedbit/gms/viewmodels"
 )
@@ -76,7 +76,7 @@ func GetDefaultAdminNavigation() []*viewmodels.AdminNavigationItem {
 }
 
 // GetAdminLayoutModel creates an admin layout view model with default navigation
-func GetAdminLayoutModel(c *fiber.Ctx, title string) *viewmodels.AdminLayoutViewModel {
+func GetAdminLayoutModel(c fiber.Ctx, title string) *viewmodels.AdminLayoutViewModel {
 	layoutViewModel := viewmodels.NewAdminLayoutViewModel(title, title, c)
 
 	// Add default navigation

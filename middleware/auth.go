@@ -3,19 +3,15 @@ package middleware
 import (
 	"fmt"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/invertedbit/gms/auth"
-	hx "github.com/stackus/hxgo"
-	"github.com/stackus/hxgo/hxfiber"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/session"
+	"github.com/invertedbit/gms/htmx"
 )
 
-func RequireAuthenticatedUser(c *fiber.Ctx) error {
+func RequireAuthenticatedUser(c fiber.Ctx) error {
 	isAuthenticated := false
 	fmt.Println("Auth middleware called")
-	session, err := auth.SessionStore.Get(c)
-	if err != nil {
-		fmt.Println("could not retrieve session")
-	}
+	session := session.FromContext(c)
 	userId := session.Get("user_uuid")
 	fmt.Println(fmt.Sprintf("Got user_uuid: %v", userId))
 
@@ -26,9 +22,11 @@ func RequireAuthenticatedUser(c *fiber.Ctx) error {
 	if isAuthenticated {
 		return c.Next()
 	} else {
-		if hxfiber.IsHtmx(c) {
-			hxfiber.Response(c, hx.Location("/auth/login"))
+		hxHeader := new(htmx.HXHeader)
+		c.Bind().Header(hxHeader)
+		if hxHeader.IsHTMXRequest() {
+			htmx.HXLocation.Set(c, "/auth/login")
 		}
-		return c.Redirect("/auth/login")
+		return c.Redirect().To("/auth/login")
 	}
 }

@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/fiber/v3/middleware/static"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/adaptor"
+	"github.com/gofiber/fiber/v3/middleware/session"
 	"github.com/gofiber/storage/sqlite3/v2"
 	"github.com/invertedbit/gms/auth"
 	adminhandlers "github.com/invertedbit/gms/handlers/admin"
@@ -16,7 +18,7 @@ import (
 	"github.com/invertedbit/gms/viewmodels"
 )
 
-func GetNavbarModel(c *fiber.Ctx) *viewmodels.NavbarViewModel {
+func GetNavbarModel(c fiber.Ctx) *viewmodels.NavbarViewModel {
 	navbarModel := viewmodels.NewNavbarViewModel()
 
 	navbarModel.AddItem(&viewmodels.NavbarMenuItem{
@@ -48,12 +50,9 @@ func GetNavbarModel(c *fiber.Ctx) *viewmodels.NavbarViewModel {
 	return navbarModel
 }
 
-func GetLayoutModel(c *fiber.Ctx, title string) *viewmodels.LayoutViewModel {
+func GetLayoutModel(c fiber.Ctx, title string) *viewmodels.LayoutViewModel {
 	layoutViewModel := viewmodels.NewLayoutViewModel(title, GetNavbarModel(c), false, 2025, c)
-	session, err := auth.SessionStore.Get(c)
-	if err != nil {
-		panic(err)
-	}
+	session := session.FromContext(c)
 
 	userId := session.Get("user_uuid")
 	if userId != nil && userId != "" {
@@ -82,13 +81,17 @@ func New() *fiber.App {
 		ConnMaxLifetime: 1 * time.Second,
 	})
 
-	auth.SessionStore = *session.New(session.Config{
+	app.Use(session.New(session.Config{
 		Storage: store,
-	})
+	}))
+
+	// auth.SessionStore = *session.New(session.Config{
+	// 	Storage: store,
+	// })
 
 	// app.Use(auth.SessionStore)
 
-	app.Static("/", "./assets")
+	app.Get("/*", static.New("./assets"))
 
 	app.Get("/", HandleViewHome)
 
@@ -103,7 +106,7 @@ func New() *fiber.App {
 	return app
 }
 
-func HandleNotFound(c *fiber.Ctx) error {
+func HandleNotFound(c fiber.Ctx) error {
 	// notFound := views.NotFoundPage(GetLayoutModel(c, "Not Found", false))
 	notFoundPage := html.Page{
 		Title:           "404 Not Found - GoCook",
@@ -115,7 +118,7 @@ func HandleNotFound(c *fiber.Ctx) error {
 	return handler(c)
 }
 
-func HandleViewHome(c *fiber.Ctx) error {
+func HandleViewHome(c fiber.Ctx) error {
 	// home := views.HomePage(GetLayoutModel(c, "Dashboard", false), "Hello World!")
 
 	homePage := html.Page{

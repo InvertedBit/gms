@@ -3,15 +3,14 @@ package adminhandlers
 import (
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	handlerutils "github.com/invertedbit/gms/handlers/utils"
 	"github.com/invertedbit/gms/html"
 	adminviews "github.com/invertedbit/gms/html/views/admin"
-	hx "github.com/stackus/hxgo"
-	"github.com/stackus/hxgo/hxfiber"
+	"github.com/invertedbit/gms/htmx"
 )
 
-func HandleBackendDashboard(c *fiber.Ctx) error {
+func HandleBackendDashboard(c fiber.Ctx) error {
 	adminLayoutModel := GetAdminLayoutModel(c, "Admin Dashboard")
 
 	// Add breadcrumbs
@@ -31,10 +30,13 @@ func HandleBackendDashboard(c *fiber.Ctx) error {
 	return handlerutils.ReturnHandler(c, dashboardPage)
 }
 
-func HandleBackendDashboardRedirect(c *fiber.Ctx) error {
-	hxfiber.Response(c, hx.Status(http.StatusMovedPermanently), hx.Redirect("/admin/dashboard"))
-	if hxfiber.IsHtmx(c) {
+func HandleBackendDashboardRedirect(c fiber.Ctx) error {
+	hxHeader := new(htmx.HXHeader)
+	c.Bind().Header(hxHeader)
+	c.Status(http.StatusMovedPermanently)
+	htmx.HXRedirect.Set(c, "/admin/dashboard")
+	if hxHeader.IsHTMXRequest() {
 		return nil
 	}
-	return c.Redirect("/admin/dashboard")
+	return c.Redirect().To("/admin/dashboard")
 }
