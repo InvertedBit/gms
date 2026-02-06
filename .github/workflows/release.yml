@@ -47,7 +47,7 @@ jobs:
         run: go build -o ./build/gms .
 
       - name: Create ZIP
-        run: zip -j gms.zip ./build/gms assets/*
+        run: zip gms.zip build/gms assets .env
 
       - name: Generate Checksums
         run: sha256sum gms.zip > checksums.txt
