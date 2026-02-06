@@ -46,7 +46,7 @@ jobs:
         run: GOOS=js GOARCH=wasm go build -o assets/js/main.wasm wasm/wasm.go
 
       - name: Build GMS
-        run: go build -o ./build/gms ."
+        run: go build -o ./build/gms .
 
       - name: Create ZIP
         run: zip -j gms.zip ./build/gms assets/*
