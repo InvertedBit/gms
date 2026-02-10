@@ -102,12 +102,11 @@ func HandleUserCreate(c fiber.Ctx) error {
 		user.RoleSlug = roleSlug
 	}
 
-	if err := database.DBConn.Create(&user).Error; err != nil {
+	if err := gorm.G[models.User](database.DBConn).Create(&user).Error; err != nil {
 		// Check for unique constraint violation
 		if isDuplicateKeyError(err) {
 			c.Status(400)
-			var roles []models.Role
-			database.DBConn.Order("name ASC").Find(&roles)
+			roles, _ := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
 			vm := viewmodels.NewUserFormViewModel(&user, roles, false)
 			vm.FormErrors["email"] = "A user with this email already exists"
 			return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
@@ -123,7 +122,7 @@ func HandleUserUpdate(c fiber.Ctx) error {
 	userID := c.Params("id")
 
 	var user models.User
-	if err := database.DBConn.Where("id = ?", userID).First(&user).Error; err != nil {
+	if err := gorm.G[models.User](database.DBConn).Where("id = ?", userID).First(context.Background(), &user).Error; err != nil {
 		return c.Status(404).SendString("User not found")
 	}
 
@@ -146,12 +145,11 @@ func HandleUserUpdate(c fiber.Ctx) error {
 		user.RoleSlug = ""
 	}
 
-	if err := database.DBConn.Save(&user).Error; err != nil {
+	if err := gorm.G[models.User](database.DBConn).Save(&user).Error; err != nil {
 		// Check for unique constraint violation
 		if isDuplicateKeyError(err) {
 			c.Status(400)
-			var roles []models.Role
-			database.DBConn.Order("name ASC").Find(&roles)
+			roles, _ := gorm.G[models.Role](database.DBConn).Order("name ASC").Find(context.Background())
 			vm := viewmodels.NewUserFormViewModel(&user, roles, true)
 			vm.FormErrors["email"] = "A user with this email already exists"
 			return handlerutils.RenderNode(c, adminviews.UserFormModal(vm))
@@ -166,7 +164,7 @@ func HandleUserUpdate(c fiber.Ctx) error {
 func HandleUserDelete(c fiber.Ctx) error {
 	userID := c.Params("id")
 
-	if err := database.DBConn.Delete(&models.User{}, "id = ?", userID).Error; err != nil {
+	if err := gorm.G[models.User](database.DBConn).Delete(&models.User{}, "id = ?", userID).Error; err != nil {
 		return c.Status(400).SendString("Error deleting user")
 	}
 
@@ -182,8 +180,7 @@ func renderUserTable(c fiber.Ctx) error {
 // buildUserTableData fetches users from database and builds table data
 func buildUserTableData() *admincomponents.TableData {
 	// Fetch users from database
-	var users []models.User
-	database.DBConn.Preload("Role").Order("email ASC").Find(&users)
+	users, _ := gorm.G[models.User](database.DBConn).Preload("Role").Order("email ASC").Find(context.Background())
 
 	// Build table data
 	userTableData := &admincomponents.TableData{
