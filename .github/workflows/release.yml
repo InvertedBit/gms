@@ -44,10 +44,10 @@ jobs:
         run: GOOS=js GOARCH=wasm go build -o assets/js/main.wasm wasm/wasm.go
 
       - name: Build GMS
-        run: go build -o ./build/gms .
+        run: go build -o ./gms .
 
       - name: Create ZIP
-        run: mv ./build/gms ./gms && zip -r gms.zip build/gms assets .env
+        run: zip -r gms.zip gms assets .env
 
       - name: Generate Checksums
         run: sha256sum gms.zip > checksums.txt
