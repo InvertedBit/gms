@@ -48,20 +48,11 @@ jobs:
       - name: Build GMS
         run: go build -o ./gms .
 
-      - name: Create ZIP
-        run: zip -r gms.zip gms assets .env
-
-      - name: Generate Checksums
-        run: sha256sum gms.zip > checksums.txt
-
-      - name: Upload Checksums
-        uses: actions/upload-artifact@v4
-        with:
-          name: checksums
-          path: checksums.txt
-
       - name: Upload GMS ZIP
         uses: actions/upload-artifact@v4
         with:
           name: gms
-          path: 'gms.zip'
+          path: |
+            gms
+            .env
+            assets/**
